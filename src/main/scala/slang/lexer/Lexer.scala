@@ -58,7 +58,7 @@ case class Lexer(fileHandler: FileHandler) {
 
           return Some(Token(TokenType.Number, num, fileHandler.row))
 
-        case c if c.isLetter || c == '_' => // identificator or keyword
+        case c if c.isLetter || c == '_' => // identifier or keyword
           var lexem = c.toString()
           while (fileHandler.currentChar.isLetterOrDigit || fileHandler.currentChar == '_') lexem += fileHandler.consumeChar
           if (TokenType.fromLexem(lexem).isDefined)
