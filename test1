@@ -1,0 +1,11 @@
+var s = "\" hejka \"" // tego nie widac
+var x: Int = 5
+def foo(n: Int): Int = {
+    print(n)
+}
+
+if (x == "") {
+    print("hello")
+} else {
+    foo(x)
+}
