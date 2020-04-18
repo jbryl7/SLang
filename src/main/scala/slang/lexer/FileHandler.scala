@@ -2,8 +2,10 @@ package slang.lexer
 
 import scala.io.Source
 import slang._
+import slang.utils.{AnalysePhase, ExceptionHandler}
 
-case class Reader(path: Option[String] = None, code: Option[String] = None) {
+case class FileHandler(path: Option[String] = None,
+                       code: Option[String] = None) {
   val maybeSource: Option[String] = (path, code) match {
     case (Some(p), None) =>
       try {
@@ -12,13 +14,18 @@ case class Reader(path: Option[String] = None, code: Option[String] = None) {
         file.close()
         Some(code)
       } catch {
-        case e: Exception =>
-          ExceptionHandler.reportException(AnalysePhase.FileHandler, e)
+        case _: Exception =>
+          val e = FileHandlerException(
+            FileHandlerExceptionType.FileDoesNotExist)
+          ExceptionHandler.reportException(e)
           None
       }
     case (None, Some(c)) => Some(c)
     case _ =>
-      throw ReaderException(ReaderExceptionType.NoParametersProvided)
+      val e = FileHandlerException(
+        FileHandlerExceptionType.NoParametersProvided)
+      ExceptionHandler.reportException(e)
+      None
   }
 
   val source: String = maybeSource.getOrElse("")

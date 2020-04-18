@@ -45,15 +45,17 @@ class LexerSuite extends AnyFlatSpec with Matchers {
     val returnedTokens = getTokensForCode(fun)
     returnedTokens shouldEqual funTokens.map(Some(_))
   }
-  "# as first char of identifier" should "return None" in {
-    val returnedTokens = getTokensForCode("#identifier")
-    returnedTokens shouldEqual List(None)
+  "# as first char of identifier" should "throw exception" in {
+    an[LexerException] should be thrownBy getTokensForCode("#identifier")
+  }
+  "identifier starting with a digit" should "throw exception" in {
+    an[LexerException] should be thrownBy getTokensForCode("42identifier")
   }
 
   def getTokensForCode(code: String): List[Option[Token]] = {
-    val lexer = Lexer(Reader(code = Some(code)))
+    val lexer = Lexer(FileHandler(code = Some(code)))
     var token: Option[Token] = lexer.getNextToken
-    var tokens: ListBuffer[Option[Token]] = ListBuffer(token)
+    val tokens: ListBuffer[Option[Token]] = ListBuffer(token)
     while (token.isDefined && token.get.tokenType != TokenType.EOF) {
       token = lexer.getNextToken
       tokens += token

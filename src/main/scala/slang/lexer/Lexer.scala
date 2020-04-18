@@ -1,84 +1,82 @@
 package slang.lexer
 import slang._
+import slang.utils.{AnalysePhase, ExceptionHandler}
 
-case class Lexer(reader: Reader) {
+case class Lexer(fileHandler: FileHandler) {
+  var errored = false
   def getNextToken: Option[Token] = {
+    if (errored) return None
+    while (fileHandler.currentChar.isWhitespace || fileHandler.currentChar == '\n') fileHandler.consumeChar
+    while (!fileHandler.currentChar.isWhitespace) {
+      if (fileHandler.currentChar == EOF)
+        return Some(Token(TokenType.EOF, EOF, fileHandler.row))
 
-    while (reader.currentChar.isWhitespace || reader.currentChar == '\n') reader.consumeChar
-    while (!reader.currentChar.isWhitespace) {
-      if (reader.currentChar == EOF)
-        return Some(Token(TokenType.EOF, EOF, reader.row))
-
-      reader.consumeChar match {
+      fileHandler.consumeChar match {
         case c if List('=', '!', '<', '>').contains(c) =>
-          if (reader.currentChar == '=') {
+          if (fileHandler.currentChar == '=') {
             val l = c.toString + "="
-            reader.consumeChar
-            return Some(Token(TokenType.fromLexem(l).get, l, reader.row))
+            fileHandler.consumeChar
+            return Some(Token(TokenType.fromLexem(l).get, l, fileHandler.row))
           }
-          return Some(Token(TokenType.fromLexem(c).get, c, reader.row))
+          return Some(Token(TokenType.fromLexem(c).get, c, fileHandler.row))
 
         case '/' =>
-          if (reader.currentChar == '/') {
-            while (reader.currentChar != '\n' && reader.currentChar != EOF) reader.consumeChar
+          if (fileHandler.currentChar == '/') {
+            while (fileHandler.currentChar != '\n' && fileHandler.currentChar != EOF) fileHandler.consumeChar
             return getNextToken
           }
-          return Some(Token(TokenType.Slash, '/', reader.row))
+          return Some(Token(TokenType.Slash, '/', fileHandler.row))
 
         case c if TokenType.fromLexem(c).isDefined =>
-          return Some(Token(TokenType.fromLexem(c).get, c, reader.row))
+          return Some(Token(TokenType.fromLexem(c).get, c, fileHandler.row))
 
         case '"' => // string
           var str: String = ""
-          var previousChar = reader.currentChar
-          while (reader.currentChar != '"' && reader.currentChar != EOF) {
-            previousChar = reader.consumeChar
-            if (previousChar == '\\' && reader.currentChar == '"') {
+          var previousChar = fileHandler.currentChar
+          while (fileHandler.currentChar != '"' && fileHandler.currentChar != EOF) {
+            previousChar = fileHandler.consumeChar
+            if (previousChar == '\\' && fileHandler.currentChar == '"') {
               str += previousChar
-              previousChar = reader.consumeChar
+              previousChar = fileHandler.consumeChar
             }
             str += previousChar
           }
-          reader.consumeChar
-          return Some(Token(TokenType.String, str, reader.row))
+          fileHandler.consumeChar
+          return Some(Token(TokenType.String, str, fileHandler.row))
 
         case c if c.isDigit => //idea: maybe add float Type
           if (c == '0')
-            return Some(Token(TokenType.Number, c, reader.row))
+            return Some(Token(TokenType.Number, c, fileHandler.row))
 
           var num: String = c.toString
-          while (reader.currentChar.isDigit) num += reader.consumeChar
-          num.foreach { d =>
-            if (!d.isDigit) {
-              ExceptionHandler.reportException(
-                AnalysePhase.Lexer,
-                LexerException(LexerExceptionType.IdentifierStartedWithDigit),
-                Some(messageWithPosition(num)))
-              return None
-            }
+          while (fileHandler.currentChar.isDigit) num += fileHandler.consumeChar
+          if (fileHandler.currentChar.isLetter) {
+            ExceptionHandler.reportException(
+              LexerException(LexerExceptionType.IdentifierStartedWithDigit),
+              Some(messageWithPositionInFile(num)))
           }
-          return Some(Token(TokenType.Number, num, reader.row))
+
+          return Some(Token(TokenType.Number, num, fileHandler.row))
 
         case c if c.isLetter || c == '_' => // identificator or keyword
           var lexem = c.toString()
-          while (reader.currentChar.isLetterOrDigit || reader.currentChar == '_') lexem += reader.consumeChar
+          while (fileHandler.currentChar.isLetterOrDigit || fileHandler.currentChar == '_') lexem += fileHandler.consumeChar
           if (TokenType.fromLexem(lexem).isDefined)
             return Some(
-              Token(TokenType.fromLexem(lexem).get, lexem, reader.row))
-          return Some(Token(TokenType.Identifier, lexem, reader.row))
+              Token(TokenType.fromLexem(lexem).get, lexem, fileHandler.row))
+          return Some(Token(TokenType.Identifier, lexem, fileHandler.row))
 
         case c =>
           ExceptionHandler.reportException(
-            AnalysePhase.Lexer,
             LexerException(LexerExceptionType.InvalidSyntax),
-            Some(messageWithPosition()))
+            Some(messageWithPositionInFile()))
           return None
       }
     }
     None
   }
-  def messageWithPosition(lex: String = "") =
-    s"line ${reader.row} column ${reader.column}  ${lex}"
+  def messageWithPositionInFile(lex: String = "") =
+    s"line ${fileHandler.row} column ${fileHandler.column}  ${lex}"
   implicit def charToString(c: Char): String =
     c.toString()
 }

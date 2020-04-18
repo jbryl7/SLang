@@ -1,6 +1,6 @@
 name := "src/main/slang"
 version := "1.0.0"
-scalaVersion := "2.12.8"
+scalaVersion := "2.12.10"
 scalacOptions := Seq(
   "-target:jvm-1.8",
   "-unchecked",
@@ -11,7 +11,8 @@ scalacOptions := Seq(
   "-Ywarn-macros:after",
   "-Ywarn-unused:locals",
   "-Ywarn-unused:privates",
-  "-language:higherKinds"
+  "-language:higherKinds",
+  "-language:implicitConversions"
 )
 val scalaTestVersion = "3.1.1"
 

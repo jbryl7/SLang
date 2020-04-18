@@ -1,4 +1,4 @@
-package slang
+package slang.utils
 
 object AnalysePhase extends Enumeration {
   type AnalysePhase = Value
