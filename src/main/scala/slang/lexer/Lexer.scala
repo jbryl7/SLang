@@ -45,18 +45,23 @@ case class Lexer(fileHandler: FileHandler) {
           return Some(Token(TokenType.String, str, fileHandler.row))
 
         case c if c.isDigit => //idea: maybe add float Type
+          var retToken: Option[Token] = None
+          var num: String = ""
           if (c == '0')
-            return Some(Token(TokenType.Number, c, fileHandler.row))
+            retToken = Some(Token(TokenType.Number, c, fileHandler.row))
+          else {
+            num = c.toString
+            while (fileHandler.currentChar.isDigit) num += fileHandler.consumeChar
+            retToken = Some(Token(TokenType.Number, num, fileHandler.row))
+          }
 
-          var num: String = c.toString
-          while (fileHandler.currentChar.isDigit) num += fileHandler.consumeChar
           if (fileHandler.currentChar.isLetter) {
             ExceptionHandler.reportException(
               LexerException(LexerExceptionType.IdentifierStartedWithDigit),
               Some(messageWithPositionInFile(num)))
           }
 
-          return Some(Token(TokenType.Number, num, fileHandler.row))
+          return retToken
 
         case c if c.isLetter || c == '_' => // identifier or keyword
           var lexem = c.toString()
