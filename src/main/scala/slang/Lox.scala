@@ -5,7 +5,6 @@ import slang.lexer.{Lexer, FileHandler, Token, TokenType}
 import scala.io.Source
 
 object Lox extends App {
-  val EX_USAGE = 64
   try {
     args match {
       case arr if arr.length != 1 =>

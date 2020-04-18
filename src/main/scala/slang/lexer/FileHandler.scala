@@ -2,7 +2,7 @@ package slang.lexer
 
 import scala.io.Source
 import slang._
-import slang.utils.{AnalysePhase, ExceptionHandler}
+import slang.utils.{AnalysePhase, ExceptionHandler, FileHandlerException, FileHandlerExceptionType}
 
 case class FileHandler(path: Option[String] = None,
                        code: Option[String] = None) {

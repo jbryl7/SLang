@@ -4,6 +4,8 @@ import org.scalatest.matchers.should.Matchers
 import org.scalatest.flatspec.AnyFlatSpec
 import slang.EOF
 import org.scalatest.matchers._
+import slang.utils.LexerException
+
 import scala.collection.mutable.ListBuffer
 import scala.language.postfixOps
 

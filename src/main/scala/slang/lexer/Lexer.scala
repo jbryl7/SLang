@@ -1,11 +1,9 @@
 package slang.lexer
 import slang._
-import slang.utils.{AnalysePhase, ExceptionHandler}
+import slang.utils.{AnalysePhase, ExceptionHandler, LexerException, LexerExceptionType}
 
 case class Lexer(fileHandler: FileHandler) {
-  var errored = false
   def getNextToken: Option[Token] = {
-    if (errored) return None
     while (fileHandler.currentChar.isWhitespace || fileHandler.currentChar == '\n') fileHandler.consumeChar
     while (!fileHandler.currentChar.isWhitespace) {
       if (fileHandler.currentChar == EOF)
@@ -63,7 +61,7 @@ case class Lexer(fileHandler: FileHandler) {
 
           return retToken
 
-        case c if c.isLetter || c == '_' => // identifier or keyword
+        case c if c.isLetter || c == '_' =>
           var lexem = c.toString()
           while (fileHandler.currentChar.isLetterOrDigit || fileHandler.currentChar == '_') lexem += fileHandler.consumeChar
           if (TokenType.fromLexem(lexem).isDefined)
@@ -80,8 +78,10 @@ case class Lexer(fileHandler: FileHandler) {
     }
     None
   }
+
   def messageWithPositionInFile(lex: String = "") =
     s"line ${fileHandler.row} column ${fileHandler.column}  ${lex}"
+
   implicit def charToString(c: Char): String =
     c.toString()
 }

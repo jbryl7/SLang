@@ -3,6 +3,7 @@ package slang.lexer
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 import slang.EOF
+import slang.utils.FileHandlerException
 
 class FileHandlerSuite extends AnyFlatSpec with Matchers {
   "provided with string" should "return correct list of chars" in {

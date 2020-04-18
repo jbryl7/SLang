@@ -1,10 +1,11 @@
-package slang.lexer
-import LexerExceptionType.LexerExceptionType
-import slang.utils.{AnalysePhase, CustomException}
+package slang.utils
+
 import slang.utils.AnalysePhase.AnalysePhase
+import slang.utils.LexerExceptionType.LexerExceptionType
 
 case class LexerException(exceptionType: LexerExceptionType)
     extends CustomException {
+
   val analysePhase: AnalysePhase = AnalysePhase.Lexer
   val message: String = exceptionType match {
     case LexerExceptionType.TokenTypeNotFound => "Token type not found"
@@ -18,5 +19,4 @@ case class LexerException(exceptionType: LexerExceptionType)
 case object LexerExceptionType extends Enumeration {
   type LexerExceptionType = Value
   val InvalidSyntax, TokenTypeNotFound, IdentifierStartedWithDigit = Value
-
 }
