@@ -1,6 +1,11 @@
 package slang.lexer
 import slang._
-import slang.utils.{AnalysePhase, ExceptionHandler, LexerException, LexerExceptionType}
+import slang.utils.{
+  AnalysePhase,
+  ExceptionHandler,
+  LexerException,
+  LexerExceptionType
+}
 
 case class Lexer(fileHandler: FileHandler) {
   def getNextToken: Option[Token] = {
@@ -11,9 +16,8 @@ case class Lexer(fileHandler: FileHandler) {
 
       fileHandler.consumeChar match {
         case c if List('=', '!', '<', '>').contains(c) =>
-          if (fileHandler.currentChar == '=') {
-            val l = c.toString + "="
-            fileHandler.consumeChar
+          if ((c == '<' && fileHandler.currentChar == '-') || fileHandler.currentChar == '=') {
+            val l = c.toString + fileHandler.consumeChar
             return Some(Token(TokenType.fromLexem(l).get, l, fileHandler.row))
           }
           return Some(Token(TokenType.fromLexem(c).get, c, fileHandler.row))

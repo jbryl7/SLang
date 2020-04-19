@@ -12,7 +12,7 @@ object TokenType extends Enumeration {
   Minus, Plus, Semicolon, Slash, Star, Bang, BangEqual, Equal, Assign, Greater,
   GreaterEqual, Less, LessEqual, Id, Identifier, String, Number, And, Class,
   Else, False, True, Fun, Colon, For, If, NIL, Or, Print, Return, Super, This,
-  Var, While, Type, EOF = Value
+  Var, While, Type, Until, ForArrow, EOF = Value
 
   val x: mutable.Map[String, TokenType] = mutable.Map(
     ("&&", And),
@@ -23,6 +23,8 @@ object TokenType extends Enumeration {
     ("def", Fun),
     ("=", Assign),
     ("for", For),
+    ("until", Until),
+    ("<-", ForArrow),
     ("var", Var),
     (">", Greater),
     ("<", Less),
