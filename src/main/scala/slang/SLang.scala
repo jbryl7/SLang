@@ -19,6 +19,7 @@ object SLang extends App {
           token = lexer.getNextToken
           println(token)
         }
+        fileHandler.source.close()
     }
   } catch {
     case e: Exception => println(e)

@@ -11,13 +11,10 @@ import slang.utils.{
 
 case class FileHandler(path: Option[String] = None,
                        code: Option[String] = None) {
-  val maybeSource: Option[String] = (path, code) match {
+  val maybeSource: Option[Source] = (path, code) match {
     case (Some(p), None) =>
       try {
-        val file = Source.fromFile(p)
-        val code = file.getLines.toList.mkString("\n")
-        file.close()
-        Some(code)
+        Some(Source.fromFile(p))
       } catch {
         case _: Exception =>
           val e = FileHandlerException(
@@ -25,7 +22,9 @@ case class FileHandler(path: Option[String] = None,
           ExceptionHandler.reportException(e)
           None
       }
-    case (None, Some(c)) => Some(c)
+
+    case (None, Some(c)) => Some(Source.fromString(c))
+
     case _ =>
       val e = FileHandlerException(
         FileHandlerExceptionType.NoParametersProvided)
@@ -33,38 +32,26 @@ case class FileHandler(path: Option[String] = None,
       None
   }
 
-  val source: String = maybeSource.getOrElse("")
-  val sourceSize: Int = source.length
-  var currentChar: Char = if (sourceSize > 0) source(0) else EOF
+  val source: Source = maybeSource.get
   val currentPosition: CurrentPosition = CurrentPosition(0, 0)
-  var pos = 1
+  var currentChar: Char = if (source.hasNext) source.next() else EOF
 
-  def readChar: Char =
-    currentChar
-
-  def consumeChar: Char = {
-    val oldChar = currentChar
-    if (pos == sourceSize) {
-      pos += 1
+  def consumeChar(): Char = {
+    val prevChar = currentChar
+    if (source.hasNext) {
+      currentChar = source.next()
+      if (prevChar == '\n') {
+        currentPosition.column = 0
+        currentPosition.row += 1
+      } else
+        currentPosition.column += 1
+    } else {
       currentChar = EOF
-      return oldChar
     }
-    if (pos > sourceSize) {
-      currentChar = EOF
-      return currentChar
-    }
-    currentChar = source(pos)
-    if (oldChar == '\n') {
-      currentPosition.row += 1
-      currentPosition.column = 0
-    } else
-      currentPosition.column += 1
-    pos += 1
-    oldChar
+    prevChar
   }
+
+  def readChar: Char = currentChar
 }
 
-case class CurrentPosition(var row: Int, var column: Int) {
-  def apply(currentPosition: CurrentPosition): CurrentPosition =
-    CurrentPosition(currentPosition.row, currentPosition.column)
-}
+case class CurrentPosition(var row: Int, var column: Int)
