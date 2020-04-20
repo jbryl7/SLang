@@ -9,13 +9,8 @@ import slang.utils.{
 
 case class Lexer(fileHandler: FileHandler) {
   def getNextToken: Option[Token] = {
-//    var lastConsumedChar = fileHandler.consumeChar
     while (fileHandler.currentChar.isWhitespace || fileHandler.currentChar == '\n') fileHandler.consumeChar
-
     val currentPosition = fileHandler.currentPosition.copy()
-
-    if (fileHandler.currentChar == EOF)
-      return Some(Token(TokenType.EOF, EOF, currentPosition))
 
     fileHandler.consumeChar match {
       case c
@@ -35,10 +30,10 @@ case class Lexer(fileHandler: FileHandler) {
       case c if TokenType.fromLexem(c).isDefined =>
         Some(Token(TokenType.fromLexem(c).get, c, currentPosition))
 
-      case '"' => // string
+      case '"' =>
         getStringToken(currentPosition)
 
-      case c if c.isDigit => //idea: maybe add float Type
+      case c if c.isDigit =>
         getNumberToken(c, currentPosition)
 
       case c if c.isLetter || c == '_' =>
@@ -51,10 +46,11 @@ case class Lexer(fileHandler: FileHandler) {
         None
     }
   }
-  
+
   def messageWithPositionInFile(lex: String = "",
                                 currentPosition: CurrentPosition) =
     s"${currentPosition}  ${lex}"
+
   def getStringToken(position: CurrentPosition): Option[Token] = {
     var str: String = ""
     var previousChar = fileHandler.currentChar
@@ -88,7 +84,6 @@ case class Lexer(fileHandler: FileHandler) {
       while (fileHandler.currentChar.isDigit) num += fileHandler.consumeChar
       retToken = Some(Token(TokenType.Number, num, position))
     }
-
     if (fileHandler.currentChar.isLetter) {
       ExceptionHandler.reportException(
         LexerException(LexerExceptionType.IdentifierStartedWithDigit),

@@ -15,7 +15,7 @@ object SLang extends App {
         val lexer = Lexer(fileHandler)
         var token: Option[Token] = lexer.getNextToken
         println(token)
-        while (token.isDefined && token.get.tokenType != TokenType.EOF) {
+        while (token.isDefined && token.get.tokenType != TokenType.Eof) {
           token = lexer.getNextToken
           println(token)
         }

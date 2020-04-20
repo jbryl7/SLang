@@ -2,6 +2,7 @@ package slang.lexer
 
 import scala.collection.mutable
 import TokenType.TokenType
+import slang.EOF
 
 case class Token(tokenType: TokenType,
                  lexeme: String,
@@ -14,10 +15,11 @@ object TokenType extends Enumeration {
   Minus, Plus, Semicolon, Slash, Star, Bang, BangEqual, Equal, Assign, Greater,
   GreaterEqual, Less, LessEqual, Id, Identifier, String, Number, And, Class,
   Else, False, True, Fun, Colon, For, If, NIL, Or, Print, Return, Super, This,
-  Var, While, Type, Until, ForArrow, EOF = Value
+  Var, While, Type, Until, ForArrow, Eof = Value
 
   val x: mutable.Map[String, TokenType] = mutable.Map(
     ("&&", And),
+    (EOF.toString(), Eof),
     ("||", Or),
     ("Int", Type),
     ("else", Else),
