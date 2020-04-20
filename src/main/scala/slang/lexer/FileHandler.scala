@@ -36,8 +36,7 @@ case class FileHandler(path: Option[String] = None,
   val source: String = maybeSource.getOrElse("")
   val sourceSize: Int = source.length
   var currentChar: Char = if (sourceSize > 0) source(0) else EOF
-  var row: Int = 0
-  var column: Int = 0
+  val currentPosition: CurrentPosition = CurrentPosition(0, 0)
   var pos = 1
 
   def readChar: Char =
@@ -56,11 +55,15 @@ case class FileHandler(path: Option[String] = None,
     }
     currentChar = source(pos)
     if (oldChar == '\n') {
-      row += 1
-      column = 0
+      currentPosition.row += 1
+      currentPosition.column = 0
     } else
-      column += 1
+      currentPosition.column += 1
     pos += 1
     oldChar
   }
+}
+case class CurrentPosition(var row: Int, var column: Int) {
+  def apply(currentPosition: CurrentPosition): CurrentPosition =
+    CurrentPosition(currentPosition.row, currentPosition.column)
 }

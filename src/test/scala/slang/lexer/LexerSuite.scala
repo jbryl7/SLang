@@ -2,7 +2,7 @@ package slang.lexer
 
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.flatspec.AnyFlatSpec
-import slang.EOF
+import slang.{EOF, lexer}
 import org.scalatest.matchers._
 import slang.utils.LexerException
 
@@ -13,24 +13,29 @@ class LexerSuite extends AnyFlatSpec with Matchers {
   val escapedString = "\"string with \\\"escaping\\\"\""
   val escapedStringAfterLexer = "string with \\\"escaping\\\""
   val escapedStringToken: Token =
-    Token(TokenType.String, escapedStringAfterLexer, 0)
-  def eofToken(line: Int = 0): Token = Token(TokenType.EOF, EOF.toString, line)
+    Token(TokenType.String, escapedStringAfterLexer, CurrentPosition(0, 0))
+  def eofToken(line: Int = 0, col: Int = 0): Token =
+    Token(TokenType.EOF, EOF.toString, CurrentPosition(line, col))
   val escapedStringWithComment: String = escapedString + "// comment"
 
   "number in source" should "return correct number token" in {
     val number = "42"
     val returnedTokens = getTokensForCode(number)
-    returnedTokens shouldEqual List(Token(TokenType.Number, number, 0),
-                                    eofToken()).map(Some(_))
+    returnedTokens shouldEqual List(Token(TokenType.Number,
+                                          number,
+                                          CurrentPosition(0, 0)),
+                                    eofToken(0, 1)).map(Some(_))
   }
   "escaped string" should "return correct string token" in {
     val returnedTokens = getTokensForCode(escapedString)
-    returnedTokens shouldEqual List(escapedStringToken, eofToken()).map(Some(_))
+    returnedTokens shouldEqual List(escapedStringToken, eofToken(0, 25))
+      .map(Some(_))
 
   }
   "escaped string with comment" should "return correct string token" in {
     val returnedTokens = getTokensForCode(escapedStringWithComment)
-    returnedTokens shouldEqual List(escapedStringToken, eofToken()).map(Some(_))
+    returnedTokens shouldEqual List(escapedStringToken, eofToken(0, 35))
+      .map(Some(_))
   }
   "brackets" should "return correct list of tokens" in {
     val brackets: String =
@@ -39,13 +44,13 @@ class LexerSuite extends AnyFlatSpec with Matchers {
         |}}
         |""".stripMargin
     val bracketTokens: List[Token] = List(
-      Token(TokenType.LeftBrace, "{", 1),
-      Token(TokenType.LeftBrace, "{", 1),
-      Token(TokenType.LeftParenthesis, "(", 1),
-      Token(TokenType.RightParenthesis, ")", 1),
-      Token(TokenType.RightBrace, "}", 2),
-      Token(TokenType.RightBrace, "}", 2),
-      eofToken(2)
+      Token(TokenType.LeftBrace, "{", CurrentPosition(1, 0)),
+      Token(TokenType.LeftBrace, "{", CurrentPosition(1, 1)),
+      Token(TokenType.LeftParenthesis, "(", CurrentPosition(1, 2)),
+      Token(TokenType.RightParenthesis, ")", CurrentPosition(1, 3)),
+      Token(TokenType.RightBrace, "}", CurrentPosition(2, 0)),
+      Token(TokenType.RightBrace, "}", CurrentPosition(2, 1)),
+      eofToken(2, 2)
     )
     val returnedTokens = getTokensForCode(brackets)
     returnedTokens shouldEqual bracketTokens.map(Some(_))
@@ -53,14 +58,14 @@ class LexerSuite extends AnyFlatSpec with Matchers {
   "correct fun definition" should "return correct list of tokens" in {
     val fun: String = "def foo(): Int = "
     val funTokens: List[Token] = List(
-      Token(TokenType.Fun, "def", 0),
-      Token(TokenType.Identifier, "foo", 0),
-      Token(TokenType.LeftParenthesis, "(", 0),
-      Token(TokenType.RightParenthesis, ")", 0),
-      Token(TokenType.Colon, ":", 0),
-      Token(TokenType.Type, "Int", 0),
-      Token(TokenType.Assign, "=", 0),
-      eofToken()
+      Token(TokenType.Fun, "def", CurrentPosition(0, 0)),
+      Token(TokenType.Identifier, "foo", CurrentPosition(0, 4)),
+      Token(TokenType.LeftParenthesis, "(", CurrentPosition(0, 7)),
+      Token(TokenType.RightParenthesis, ")", CurrentPosition(0, 8)),
+      Token(TokenType.Colon, ":", CurrentPosition(0, 9)),
+      Token(TokenType.Type, "Int", CurrentPosition(0, 11)),
+      Token(TokenType.Assign, "=", CurrentPosition(0, 15)),
+      eofToken(0, 16)
     )
     val returnedTokens = getTokensForCode(fun)
     returnedTokens shouldEqual funTokens.map(Some(_))
@@ -68,15 +73,15 @@ class LexerSuite extends AnyFlatSpec with Matchers {
   "correct for expression" should "return correct list of tokens" in {
     val forExp: String = "for (i <- 0 until 10)"
     val forExpTokens: List[Token] = List(
-      Token(TokenType.For, "for", 0),
-      Token(TokenType.LeftParenthesis, "(", 0),
-      Token(TokenType.Identifier, "i", 0),
-      Token(TokenType.ForArrow, "<-", 0),
-      Token(TokenType.Number, "0", 0),
-      Token(TokenType.Until, "until", 0),
-      Token(TokenType.Number, "10", 0),
-      Token(TokenType.RightParenthesis, ")", 0),
-      eofToken(0)
+      Token(TokenType.For, "for", CurrentPosition(0, 0)),
+      Token(TokenType.LeftParenthesis, "(", CurrentPosition(0, 4)),
+      Token(TokenType.Identifier, "i", CurrentPosition(0, 5)),
+      Token(TokenType.ForArrow, "<-", CurrentPosition(0, 7)),
+      Token(TokenType.Number, "0", CurrentPosition(0, 10)),
+      Token(TokenType.Until, "until", CurrentPosition(0, 12)),
+      Token(TokenType.Number, "10", CurrentPosition(0, 18)),
+      Token(TokenType.RightParenthesis, ")", CurrentPosition(0, 20)),
+      eofToken(0, 20)
     )
     val returnedTokens = getTokensForCode(forExp)
     returnedTokens shouldEqual forExpTokens.map(Some(_))

@@ -9,10 +9,13 @@ import slang.utils.{
 
 case class Lexer(fileHandler: FileHandler) {
   def getNextToken: Option[Token] = {
+//    var lastConsumedChar = fileHandler.consumeChar
     while (fileHandler.currentChar.isWhitespace || fileHandler.currentChar == '\n') fileHandler.consumeChar
 
+    val currentPosition = fileHandler.currentPosition.copy()
+
     if (fileHandler.currentChar == EOF)
-      return Some(Token(TokenType.EOF, EOF, fileHandler.row))
+      return Some(Token(TokenType.EOF, EOF, currentPosition))
 
     fileHandler.consumeChar match {
       case c
@@ -20,70 +23,78 @@ case class Lexer(fileHandler: FileHandler) {
             .fromLexem(c.toString() + fileHandler.currentChar)
             .isDefined =>
         val l = c.toString() + fileHandler.consumeChar
-        Some(Token(TokenType.fromLexem(l).get, l, fileHandler.row))
+        Some(Token(TokenType.fromLexem(l).get, l, currentPosition))
 
       case '/' =>
         if (fileHandler.currentChar == '/') {
           while (fileHandler.currentChar != '\n' && fileHandler.currentChar != EOF) fileHandler.consumeChar
           return getNextToken
         }
-        Some(Token(TokenType.Slash, '/', fileHandler.row))
+        Some(Token(TokenType.Slash, '/', currentPosition))
 
       case c if TokenType.fromLexem(c).isDefined =>
-        Some(Token(TokenType.fromLexem(c).get, c, fileHandler.row))
+        Some(Token(TokenType.fromLexem(c).get, c, currentPosition))
 
       case '"' => // string
-        var str: String = ""
-        var previousChar = fileHandler.currentChar
-        while (fileHandler.currentChar != '"' && fileHandler.currentChar != EOF) {
-          previousChar = fileHandler.consumeChar
-          if (previousChar == '\\' && fileHandler.currentChar == '"') {
-            str += previousChar
-            previousChar = fileHandler.consumeChar
-          }
-          str += previousChar
-        }
-        fileHandler.consumeChar
-        Some(Token(TokenType.String, str, fileHandler.row))
+        getStringToken(currentPosition)
 
       case c if c.isDigit => //idea: maybe add float Type
-        var retToken: Option[Token] = None
-        var num: String = ""
-        if (c == '0')
-          retToken = Some(Token(TokenType.Number, c, fileHandler.row))
-        else {
-          num = c.toString
-          while (fileHandler.currentChar.isDigit) num += fileHandler.consumeChar
-          retToken = Some(Token(TokenType.Number, num, fileHandler.row))
-        }
-
-        if (fileHandler.currentChar.isLetter) {
-          ExceptionHandler.reportException(
-            LexerException(LexerExceptionType.IdentifierStartedWithDigit),
-            Some(messageWithPositionInFile(num)))
-        }
-
-        retToken
+        getNumberToken(c, currentPosition)
 
       case c if c.isLetter || c == '_' =>
-        var lexem = c.toString()
-        while (fileHandler.currentChar.isLetterOrDigit || fileHandler.currentChar == '_') lexem += fileHandler.consumeChar
-        if (TokenType.fromLexem(lexem).isDefined)
-          return Some(
-            Token(TokenType.fromLexem(lexem).get, lexem, fileHandler.row))
-        Some(Token(TokenType.Identifier, lexem, fileHandler.row))
+        getIdentifierToken(c, currentPosition)
 
       case _ =>
         ExceptionHandler.reportException(
           LexerException(LexerExceptionType.InvalidSyntax),
-          Some(messageWithPositionInFile()))
+          Some(messageWithPositionInFile(currentPosition = currentPosition)))
         None
     }
   }
+  
+  def messageWithPositionInFile(lex: String = "",
+                                currentPosition: CurrentPosition) =
+    s"${currentPosition}  ${lex}"
+  def getStringToken(position: CurrentPosition): Option[Token] = {
+    var str: String = ""
+    var previousChar = fileHandler.currentChar
+    while (fileHandler.currentChar != '"' && fileHandler.currentChar != EOF) {
+      previousChar = fileHandler.consumeChar
+      if (previousChar == '\\' && fileHandler.currentChar == '"') {
+        str += previousChar
+        previousChar = fileHandler.consumeChar
+      }
+      str += previousChar
+    }
+    fileHandler.consumeChar
+    Some(Token(TokenType.String, str, position))
+  }
 
-  def messageWithPositionInFile(lex: String = "") =
-    s"line ${fileHandler.row} column ${fileHandler.column}  ${lex}"
+  def getIdentifierToken(c: Char, position: CurrentPosition): Option[Token] = {
+    var lexem = c.toString()
+    while (fileHandler.currentChar.isLetterOrDigit || fileHandler.currentChar == '_') lexem += fileHandler.consumeChar
+    if (TokenType.fromLexem(lexem).isDefined)
+      return Some(Token(TokenType.fromLexem(lexem).get, lexem, position))
+    Some(Token(TokenType.Identifier, lexem, position))
+  }
 
-  implicit def charToString(c: Char): String =
-    c.toString()
+  def getNumberToken(c: Char, position: CurrentPosition): Option[Token] = {
+    var retToken: Option[Token] = None
+    var num: String = ""
+    if (c == '0')
+      retToken = Some(Token(TokenType.Number, c, position))
+    else {
+      num = c.toString
+      while (fileHandler.currentChar.isDigit) num += fileHandler.consumeChar
+      retToken = Some(Token(TokenType.Number, num, position))
+    }
+
+    if (fileHandler.currentChar.isLetter) {
+      ExceptionHandler.reportException(
+        LexerException(LexerExceptionType.IdentifierStartedWithDigit),
+        Some(messageWithPositionInFile(num, position)))
+    }
+    retToken
+  }
+  implicit def charToString(c: Char): String = c.toString()
 }

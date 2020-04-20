@@ -3,7 +3,9 @@ package slang.lexer
 import scala.collection.mutable
 import TokenType.TokenType
 
-case class Token(tokenType: TokenType, lexeme: String, line: Int)
+case class Token(tokenType: TokenType,
+                 lexeme: String,
+                 position: CurrentPosition)
 
 object TokenType extends Enumeration {
   type TokenType = Value
