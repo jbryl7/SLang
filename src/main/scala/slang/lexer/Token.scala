@@ -49,10 +49,11 @@ object TokenType extends Enumeration {
     ("return", Return)
   )
 
-  def fromLexem(lexem: String): Option[TokenType] =
+  def fromLexem(lexem: String): Option[TokenType] = {
     if (x.contains(lexem))
       Some(x(lexem))
     else
       None
+  }
 
 }
