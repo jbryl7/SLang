@@ -17,7 +17,7 @@ object TokenType extends Enumeration {
   Else, False, True, Fun, Colon, For, If, NIL, Or, Print, Return, Super, This,
   Var, While, Type, Until, ForArrow, Eof = Value
 
-  val x: mutable.Map[String, TokenType] = mutable.Map(
+  val mapLexemToTokenType: mutable.Map[String, TokenType] = mutable.Map(
     ("&&", And),
     (EOF.toString(), Eof),
     ("||", Or),
@@ -54,8 +54,8 @@ object TokenType extends Enumeration {
   )
 
   def fromLexem(lexem: String): Option[TokenType] = {
-    if (x.contains(lexem))
-      Some(x(lexem))
+    if (mapLexemToTokenType.contains(lexem))
+      Some(mapLexemToTokenType(lexem))
     else
       None
   }

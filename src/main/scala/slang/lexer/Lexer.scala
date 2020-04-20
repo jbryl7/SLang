@@ -9,7 +9,7 @@ import slang.utils.{
 
 case class Lexer(fileHandler: FileHandler) {
   def getNextToken: Option[Token] = {
-    while (fileHandler.currentChar.isWhitespace || fileHandler.currentChar == '\n') fileHandler.consumeChar
+    skipWhiteChars()
     val currentPosition = fileHandler.currentPosition.copy()
 
     fileHandler.consumeChar match {
@@ -21,11 +21,10 @@ case class Lexer(fileHandler: FileHandler) {
         Some(Token(TokenType.fromLexem(l).get, l, currentPosition))
 
       case '/' =>
-        if (fileHandler.currentChar == '/') {
-          while (fileHandler.currentChar != '\n' && fileHandler.currentChar != EOF) fileHandler.consumeChar
-          return getNextToken
-        }
-        Some(Token(TokenType.Slash, '/', currentPosition))
+        if (fileHandler.currentChar == '/')
+          skipCommentAndReturnToken()
+        else
+          Some(Token(TokenType.Slash, '/', currentPosition))
 
       case c if TokenType.fromLexem(c).isDefined =>
         Some(Token(TokenType.fromLexem(c).get, c, currentPosition))
@@ -46,7 +45,13 @@ case class Lexer(fileHandler: FileHandler) {
         None
     }
   }
+  def skipWhiteChars(): Unit =
+    while (fileHandler.currentChar.isWhitespace || fileHandler.currentChar == '\n') fileHandler.consumeChar
 
+  def skipCommentAndReturnToken(): Option[Token] = {
+    while (fileHandler.currentChar != '\n' && fileHandler.currentChar != EOF) fileHandler.consumeChar
+    getNextToken
+  }
   def messageWithPositionInFile(lex: String = "",
                                 currentPosition: CurrentPosition) =
     s"${currentPosition}  ${lex}"

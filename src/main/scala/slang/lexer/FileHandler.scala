@@ -63,6 +63,7 @@ case class FileHandler(path: Option[String] = None,
     oldChar
   }
 }
+
 case class CurrentPosition(var row: Int, var column: Int) {
   def apply(currentPosition: CurrentPosition): CurrentPosition =
     CurrentPosition(currentPosition.row, currentPosition.column)

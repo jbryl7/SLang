@@ -14,8 +14,6 @@ class LexerSuite extends AnyFlatSpec with Matchers {
   val escapedStringAfterLexer = "string with \\\"escaping\\\""
   val escapedStringToken: Token =
     Token(TokenType.String, escapedStringAfterLexer, CurrentPosition(0, 0))
-  def eofToken(line: Int = 0, col: Int = 0): Token =
-    Token(TokenType.Eof, EOF.toString, CurrentPosition(line, col))
   val escapedStringWithComment: String = escapedString + "// comment"
 
   "number in source" should "return correct number token" in {
@@ -23,6 +21,14 @@ class LexerSuite extends AnyFlatSpec with Matchers {
     val returnedTokens = getTokensForCode(number)
     returnedTokens shouldEqual List(Token(TokenType.Number,
                                           number,
+                                          CurrentPosition(0, 0)),
+                                    eofToken(0, 1)).map(Some(_))
+  }
+  "!= in source" should "return correct number token" in {
+    val code = "!="
+    val returnedTokens = getTokensForCode(code)
+    returnedTokens shouldEqual List(Token(TokenType.BangEqual,
+                                          code,
                                           CurrentPosition(0, 0)),
                                     eofToken(0, 1)).map(Some(_))
   }
@@ -103,5 +109,6 @@ class LexerSuite extends AnyFlatSpec with Matchers {
     }
     tokens.toList
   }
-
+  def eofToken(line: Int = 0, col: Int = 0): Token =
+    Token(TokenType.Eof, EOF.toString, CurrentPosition(line, col))
 }
