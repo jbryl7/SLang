@@ -1,24 +1,19 @@
 package slang.lexer
 import slang._
-import slang.utils.{
-  AnalysePhase,
-  ExceptionHandler,
-  LexerException,
-  LexerExceptionType
-}
+import slang.lexer.TokenType._
+import slang.utils._
+import scala.collection.mutable
 
 case class Lexer(fileHandler: FileHandler) {
   def getNextToken: Option[Token] = {
     skipWhiteChars()
     val currentPosition = fileHandler.currentPosition.copy()
 
-    fileHandler.consumeChar match {
+    fileHandler.consumeChar() match {
       case c
-          if TokenType
-            .fromLexem(c.toString() + fileHandler.currentChar)
-            .isDefined =>
+          if tokenTypeFromLexem(c.toString() + fileHandler.currentChar).isDefined =>
         val l = c.toString() + fileHandler.consumeChar
-        Some(Token(TokenType.fromLexem(l).get, l, currentPosition))
+        Some(Token(tokenTypeFromLexem(l).get, l, currentPosition))
 
       case '/' =>
         if (fileHandler.currentChar == '/')
@@ -26,8 +21,8 @@ case class Lexer(fileHandler: FileHandler) {
         else
           Some(Token(TokenType.Slash, '/', currentPosition))
 
-      case c if TokenType.fromLexem(c).isDefined =>
-        Some(Token(TokenType.fromLexem(c).get, c, currentPosition))
+      case c if tokenTypeFromLexem(c).isDefined =>
+        Some(Token(tokenTypeFromLexem(c).get, c, currentPosition))
 
       case '"' =>
         getStringToken(currentPosition)
@@ -45,11 +40,14 @@ case class Lexer(fileHandler: FileHandler) {
         None
     }
   }
+
   def skipWhiteChars(): Unit =
-    while (fileHandler.currentChar.isWhitespace || fileHandler.currentChar == '\n') fileHandler.consumeChar
+    while (fileHandler.currentChar.isWhitespace) fileHandler
+      .consumeChar()
 
   def skipCommentAndReturnToken(): Option[Token] = {
-    while (fileHandler.currentChar != '\n' && fileHandler.currentChar != EOF) fileHandler.consumeChar
+    while (fileHandler.currentChar != '\n' && fileHandler.currentChar != EOF) fileHandler
+      .consumeChar()
     getNextToken
   }
   def messageWithPositionInFile(lex: String = "",
@@ -60,22 +58,22 @@ case class Lexer(fileHandler: FileHandler) {
     var str: String = ""
     var previousChar = fileHandler.currentChar
     while (fileHandler.currentChar != '"' && fileHandler.currentChar != EOF) {
-      previousChar = fileHandler.consumeChar
+      previousChar = fileHandler.consumeChar()
       if (previousChar == '\\' && fileHandler.currentChar == '"') {
         str += previousChar
-        previousChar = fileHandler.consumeChar
+        previousChar = fileHandler.consumeChar()
       }
       str += previousChar
     }
-    fileHandler.consumeChar
+    fileHandler.consumeChar()
     Some(Token(TokenType.String, str, position))
   }
 
   def getIdentifierToken(c: Char, position: CurrentPosition): Option[Token] = {
     var lexem = c.toString()
     while (fileHandler.currentChar.isLetterOrDigit || fileHandler.currentChar == '_') lexem += fileHandler.consumeChar
-    if (TokenType.fromLexem(lexem).isDefined)
-      return Some(Token(TokenType.fromLexem(lexem).get, lexem, position))
+    if (tokenTypeFromLexem(lexem).isDefined)
+      return Some(Token(tokenTypeFromLexem(lexem).get, lexem, position))
     Some(Token(TokenType.Identifier, lexem, position))
   }
 
@@ -95,6 +93,49 @@ case class Lexer(fileHandler: FileHandler) {
         Some(messageWithPositionInFile(num, position)))
     }
     retToken
+  }
+
+  val mapLexemToTokenType: mutable.Map[String, TokenType] = mutable.Map(
+    ("&&", And),
+    (EOF.toString(), Eof),
+    ("||", Or),
+    ("Int", Type),
+    ("else", Else),
+    ("if", If),
+    ("def", Fun),
+    ("=", Assign),
+    ("for", For),
+    ("until", Until),
+    ("<-", ForArrow),
+    ("var", Var),
+    (">", Greater),
+    ("<", Less),
+    ("<=", LessEqual),
+    (">=", GreaterEqual),
+    ("==", Equal),
+    ("!", Bang),
+    (":", Colon),
+    ("!=", BangEqual),
+    ("(", LeftParenthesis),
+    (")", RightParenthesis),
+    ("}", RightBrace),
+    ("{", LeftBrace),
+    ("*", Star),
+    ("+", Plus),
+    ("-", Minus),
+    ("/", Slash),
+    (",", Comma),
+    (".", Dot),
+    ("Nil", NIL),
+    ("class", Class),
+    ("return", Return)
+  )
+
+  def tokenTypeFromLexem(lexem: String): Option[TokenType] = {
+    if (mapLexemToTokenType.contains(lexem))
+      Some(mapLexemToTokenType(lexem))
+    else
+      None
   }
   implicit def charToString(c: Char): String = c.toString()
 }
