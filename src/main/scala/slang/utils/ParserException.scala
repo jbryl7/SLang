@@ -10,11 +10,14 @@ case class ParserException(exceptionType: ParserExceptionType)
   val message: String = exceptionType match {
     case ParserExceptionType.InvalidExpression =>
       "Invalid expression"
+    case ParserExceptionType.DotWithoutIdentifier =>
+      "Expected identifier after object."
   }
   override def toString: String = message
 }
 
 case object ParserExceptionType extends Enumeration {
   type ParserExceptionType = Value
-  val InvalidExpression = Value
+  val InvalidExpression, DotWithoutIdentifier = Value
+
 }

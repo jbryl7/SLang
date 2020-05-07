@@ -1,6 +1,7 @@
 package slang
 
-import slang.lexer.{Lexer, FileHandler, Token, TokenType}
+import slang.lexer.{FileHandler, Lexer, Token, TokenType}
+import slang.parser.Parser
 
 import scala.io.Source
 
@@ -13,12 +14,8 @@ object SLang extends App {
       case arr =>
         val fileHandler = FileHandler(Some(arr.head))
         val lexer = Lexer(fileHandler)
-        var token: Option[Token] = lexer.getNextToken
-        println(token)
-        while (token.isDefined && token.get.tokenType != TokenType.Eof) {
-          token = lexer.getNextToken
-          println(token)
-        }
+        val parser = Parser(lexer)
+        val program = parser.parse()
         fileHandler.source.close()
     }
   } catch {

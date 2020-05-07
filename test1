@@ -1,4 +1,11 @@
-var s = "\" hejka \"" // tego nie widac
+
+xd.heja.majo()
+xd.heja.majo()
+
+var s: Int = 1 //"\" hejka \"" // tego nie widac
+def xd(arg1: Int) = {
+}
+xd(ar)
 var x: Int = 5
 def foo(n: Int): Int = {
     print(n)
