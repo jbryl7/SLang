@@ -7,7 +7,7 @@ import slang.utils._
 import scala.collection.mutable.ListBuffer
 import util.control.Breaks._
 
-case class FunctionCall(name: String,
+case class FunctionCall(identifier: String,
                         var arguments: ListBuffer[Node] = ListBuffer())
     extends Node
     with Instruction {
@@ -19,8 +19,8 @@ case class FunctionCall(name: String,
     var maybeFun = Option.empty[FunctionDeclaration]
     breakable {
       while (maybeFun.isEmpty) {
-        if (scope.isInScope(name))
-          maybeFun = Some(scope.functions(name))
+        if (scope.isInScope(identifier))
+          maybeFun = Some(scope.functions(identifier))
         else
           tmpScope = tmpScope.parentScope
         if (tmpScope == null) break

@@ -30,8 +30,13 @@ class ParserSuite extends AnyFlatSpec with Matchers {
   "unexpectedEndOfFile4" should "throw exception" in {
     an[ParserException] should be thrownBy parseCode("def fun(arg: Int) = ")
   }
-  "unexpected token" should "throw exception" in {
-    an[ParserException] should be thrownBy parseCode("x > 5")
+  "declaration of fun when variable with identical identifier in scope" should "throw exception" in {
+    an[ParserException] should be thrownBy parseCode(
+      "var x: Int = 24\ndef x() = {}")
+  }
+  "redeclaration of variable" should "throw exception" in {
+    an[ParserException] should be thrownBy parseCode(
+      "var x: Int = 24\n var x: Int = 42")
   }
   "if else else" should "throw exception" in {
     an[ParserException] should be thrownBy parseCode(
@@ -47,20 +52,29 @@ class ParserSuite extends AnyFlatSpec with Matchers {
     noException should be thrownBy parseCode(
       "var x: Int = (0 + 1) * (15 - 10) + 3")
   }
+  "correct class declaration" should "not throw exception" in {
+    noException should be thrownBy parseCode("class Class { var x: Int = 5 }")
+  }
   "correct fun declaration" should "not throw exception" in {
     noException should be thrownBy parseCode("def foo(x: Int): Int = {}")
   }
   "correct fun one line declaration" should "not throw exception" in {
     noException should be thrownBy parseCode("def foo(x: Int): Int =\nfoo()")
   }
-  "correct if" should "not throw exception" in {
+  "if (x) {}" should "not throw exception" in {
     noException should be thrownBy parseCode("if (x) {}")
   }
-  "correct if else" should "not throw exception" in {
+  "obj.another.fun()" should "not throw exception" in {
+    noException should be thrownBy parseCode("obj.another.fun()")
+  }
+  "if (x) {} else f()" should "not throw exception" in {
     noException should be thrownBy parseCode("if (x) {} else f()")
   }
-  "correct if one liner" should "not throw exception" in {
+  "if (x)\\nfun()" should "not throw exception" in {
     noException should be thrownBy parseCode("if (x)\nfun()")
+  }
+  "var x: Int = 24\\n x = 42" should "not throw exception" in {
+    noException should be thrownBy parseCode("var x: Int = 24\n x = 42")
   }
 
 }

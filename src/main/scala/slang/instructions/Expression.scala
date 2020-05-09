@@ -18,5 +18,5 @@ class Expression(operators: ListBuffer[TokenType] = ListBuffer(),
   def execute(scope: Scope) = ???
   def evaluate() = ???
   override def toString() =
-    f"Expression(\noperators: ${operators},\noperands:${operands})"
+    f"Expression(operators: ${operators} operands: ${operands}"
 }

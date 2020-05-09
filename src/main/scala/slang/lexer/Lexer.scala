@@ -106,9 +106,6 @@ case class Lexer(fileHandler: FileHandler) extends LexerInterface {
     ("if", If),
     ("def", Fun),
     ("=", Assign),
-    ("for", For),
-    ("until", Until),
-    ("<-", ForArrow),
     ("var", Var),
     (">", Greater),
     ("<", Less),
@@ -128,7 +125,6 @@ case class Lexer(fileHandler: FileHandler) extends LexerInterface {
     ("/", DivideOperator),
     (",", Comma),
     (".", Dot),
-    ("Nil", NIL),
     ("class", Class),
     ("return", Return)
   )

@@ -23,21 +23,35 @@ case class Parser(lexer: LexerInterface) {
     breakable {
       while (maybeParsedStatement.isDefined) {
         program.addStatement(maybeParsedStatement.get)
-        println(maybeParsedStatement)
+        println(currentToken)
         if (currentToken.tokenType == TokenType.Eof)
           break
         maybeParsedStatement = parseInstruction(currentScope)
       }
     }
+    println(program.instructions)
     program
   }
 
-  def parseClassDeclaration(scope: Scope): Option[Node] = ???
+  def parseClassDeclaration(scope: Scope): Option[Node] = {
+    println("class declaration")
+
+    accept(TokenType.Class)
+    val identifier = currentToken.lexeme
+    accept(TokenType.Identifier)
+    accept(TokenType.LeftBrace)
+    val classScope = Scope()
+    parseBody(classScope)
+    accept(TokenType.RightBrace)
+    Some(ClassDeclaration(identifier, classScope))
+  }
 
   def parseInstruction(scope: Scope): Option[Node] = {
     println("statement")
     maybeToken match {
-      case Some(Token(TokenType.LeftBrace, _, _))  => openNewScope()
+      case Some(Token(TokenType.LeftBrace, _, _)) =>
+        accept(TokenType.LeftBrace) // todo change scope or smth
+        parseInstruction(scope)
       case Some(Token(TokenType.Identifier, _, _)) => parseCall()
       case Some(Token(TokenType.If, _, _))         => parseIf(scope)
       case Some(Token(TokenType.Fun, _, _))        => parseFunctionDeclaration(scope)
@@ -54,11 +68,12 @@ case class Parser(lexer: LexerInterface) {
     }
   }
 
-  def openNewScope(): Option[Node] = {
+  def openNewScope(): Unit = {
     println("new scope")
+    accept(TokenType.LeftBrace)
     program.addLocalScope()
     currentScope = program.addLocalScope()
-    parseInstruction(currentScope)
+
   }
 
   def parseCall(): Option[Node] = {
@@ -69,50 +84,28 @@ case class Parser(lexer: LexerInterface) {
     currentToken.tokenType match {
       case TokenType.LeftParenthesis =>
         println("funCall")
-        val funCall = FunctionCall(currentToken.lexeme)
         accept(TokenType.LeftParenthesis)
-        funCall.arguments = parseArguments()
+        val arguments = parseArguments()
         accept(TokenType.RightParenthesis)
-        Some(funCall)
+        Some(FunctionCall(identifier, arguments))
       case TokenType.Dot => // todo correct this, to use object scope
         println("object member call")
         accept(TokenType.Dot)
-        val objectCall = ObjectCall(identifier)
-        objectCall.call = parseCall()
-        Some(objectCall)
-      case TokenType.Eof =>
-        ExceptionHandler.reportException(
-          ParserException(ParserExceptionType.UnexpectedEOF))
-        None
-      case _ =>
-        println("varCall")
-        println(currentToken)
-        Some(VariableCall(identifier)) //to be corrected
+        val call = parseCall()
+        Some(ObjectCall(identifier, call))
+      case _ => // if just variable like in here: x = y
+        if (currentToken.tokenType == TokenType.Assign) {
+          accept(TokenType.Assign)
+          Some(VariableAssignment(VariableCall(identifier), parseExpression()))
+        } else
+          Some(VariableCall(identifier))
     }
-  }
-
-  def parseClassCall(scope: Scope): Option[Node] = {
-    println("class call")
-    None
   }
 
   def parseReturn(scope: Scope): Option[Node] = {
     println("return")
     accept(TokenType.Return)
     Some(parseExpression())
-  }
-
-  def parseVarDeclaration(scope: Scope): Option[Node] = {
-    println("var declaration")
-    accept(TokenType.Var)
-    val identifier = currentToken.lexeme
-    accept(TokenType.Identifier)
-    accept(TokenType.Colon)
-    val varType = parseType() // Identifier for class type
-    accept(TokenType.Assign)
-    val expression = parseExpression()
-
-    Some(VarDeclaration(identifier, expression, varType))
   }
 
   def parseIf(scope: Scope): Option[Node] = {
@@ -122,13 +115,13 @@ case class Parser(lexer: LexerInterface) {
 
     val condition = parseCondition()
     accept(TokenType.RightParenthesis)
-    val ifBlock = parseFunctionBody(scope)
+    val ifBlock = parseBody(scope)
     var foundElse = false
     var elseBlock: Option[Block] = None
     if (currentToken.tokenType == TokenType.Else) {
       foundElse = true
       accept(TokenType.Else)
-      elseBlock = Some(parseFunctionBody(scope))
+      elseBlock = Some(parseBody(scope))
     }
     Some(IfElse(condition, ifBlock, elseBlock))
   }
@@ -174,6 +167,23 @@ case class Parser(lexer: LexerInterface) {
     params
   }
 
+  def parseVarDeclaration(scope: Scope): Option[Node] = {
+    println("var declaration")
+    accept(TokenType.Var)
+    val identifier = currentToken.lexeme
+    accept(TokenType.Identifier)
+    accept(TokenType.Colon)
+    val varType = parseType() // Identifier for class type
+    accept(TokenType.Assign)
+    val expression = parseExpression()
+    val declaration = new VarDeclaration(identifier, Some(expression), varType)
+    if (!scope.addVariable(declaration))
+      ExceptionHandler.reportException(
+        ParserException(ParserExceptionType.IdentifierAlreadyInScope),
+        Some(f"${currentToken.position} ${declaration.getIdentifier}"))
+    Some(declaration)
+  }
+
   def parseFunctionDeclaration(scope: Scope): Option[Node] = {
     println("fun")
     accept(TokenType.Fun)
@@ -185,11 +195,16 @@ case class Parser(lexer: LexerInterface) {
     accept(TokenType.Colon)
     val funType = parseType()
     accept(TokenType.Assign)
-    val body = parseFunctionBody(scope)
-    Some(FunctionDeclaration(identifier, funType, body, params))
+    val body = parseBody(scope, isFunBody = true)
+    val declaration = FunctionDeclaration(identifier, funType, params, body)
+    if (!scope.addFunction(declaration))
+      ExceptionHandler.reportException(
+        ParserException(ParserExceptionType.IdentifierAlreadyInScope),
+        Some(f"${currentToken.position} ${declaration.identifier}"))
+    Some(declaration)
   }
 
-  def parseFunctionBody(scope: Scope): Block = {
+  def parseBody(scope: Scope, isFunBody: Boolean = false): Block = {
     println("fun body")
     val block = Block()
     var endOfBlock = true
@@ -199,8 +214,10 @@ case class Parser(lexer: LexerInterface) {
     }
     do {
       currentToken.tokenType match {
+        case TokenType.Return if isFunBody =>
+          block.addInstruction(parseInstruction(scope).get)
         case TokenType.If | TokenType.Fun | TokenType.Identifier |
-            TokenType.Class | TokenType.Return | TokenType.Var =>
+            TokenType.Class | TokenType.Var =>
           block.addInstruction(parseInstruction(scope).get)
         case TokenType.RightBrace =>
           accept(TokenType.RightBrace)
@@ -216,6 +233,12 @@ case class Parser(lexer: LexerInterface) {
 
   def parseExpression(): Node = {
     println("expression")
+
+    if (TokenType.LeftBrace == currentToken.tokenType) // var x: Int = {x}
+      ExceptionHandler.reportException(
+        ParserException(ParserExceptionType.InvalidExpression),
+        Some(s"${currentToken.position} found ${currentToken.lexeme}"))
+
     val expression = new Expression()
     expression.addOperand(parseMultiplicativeExpression())
     currentToken.tokenType match {

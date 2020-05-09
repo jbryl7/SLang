@@ -13,5 +13,7 @@ case class Block(instructions: ListBuffer[Node] = ListBuffer())
   def setScope(scope: Scope): Unit =
     this.scope = scope
 
+  override def toString(): String =
+    f"\nBlock: \n${instructions.map(_.toString())} \nEnd of block\n"
   def execute(scope: Scope): Instruction = ???
 }

@@ -78,22 +78,7 @@ class LexerSuite extends AnyFlatSpec with Matchers {
     val returnedTokens = getTokensForCode(fun)
     returnedTokens shouldEqual funTokens.map(Some(_))
   }
-  "correct for expression" should "return correct list of tokens" in {
-    val forExp: String = "for (i <- 0 until 10)"
-    val forExpTokens: List[Token] = List(
-      Token(TokenType.For, "for", CurrentPosition(0, 0)),
-      Token(TokenType.LeftParenthesis, "(", CurrentPosition(0, 4)),
-      Token(TokenType.Identifier, "i", CurrentPosition(0, 5)),
-      Token(TokenType.ForArrow, "<-", CurrentPosition(0, 7)),
-      Token(TokenType.IntegerLiteral, "0", CurrentPosition(0, 10)),
-      Token(TokenType.Until, "until", CurrentPosition(0, 12)),
-      Token(TokenType.IntegerLiteral, "10", CurrentPosition(0, 18)),
-      Token(TokenType.RightParenthesis, ")", CurrentPosition(0, 20)),
-      eofToken(0, 20)
-    )
-    val returnedTokens = getTokensForCode(forExp)
-    returnedTokens shouldEqual forExpTokens.map(Some(_))
-  }
+
   "# as first char of identifier" should "throw exception" in {
     an[LexerException] should be thrownBy getTokensForCode("#identifier")
   }

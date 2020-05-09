@@ -14,12 +14,15 @@ case class ParserException(exceptionType: ParserExceptionType)
       "Expected identifier after object."
     case ParserExceptionType.UnexpectedEOF =>
       "Unexpected end of file."
+    case ParserExceptionType.IdentifierAlreadyInScope =>
+      "Identifier already declared in scope."
   }
   override def toString: String = message
 }
 
 case object ParserExceptionType extends Enumeration {
   type ParserExceptionType = Value
-  val InvalidExpression, UnexpectedEOF, DotWithoutIdentifier = Value
+  val InvalidExpression, UnexpectedEOF, DotWithoutIdentifier,
+  IdentifierAlreadyInScope = Value
 
 }

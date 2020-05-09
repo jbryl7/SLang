@@ -15,8 +15,8 @@ object TokenType extends Enumeration {
   Minus, Plus, Semicolon, DivideOperator, MultiplicativeOperator, Bang,
   BangEqual, Equal, Assign, Greater, GreaterEqual, Less, LessEqual, Id,
   Identifier, StringLiteral, IntegerLiteral, And, Class, Else, False, True, Fun,
-  Colon, For, If, NIL, Or, Print, Return, Super, This, Var, While, Type, Until,
-  ForArrow, UnitType, StringType, IntegerType, Eof =
+  Colon, If, Or, Print, Return, This, Var, Type, UnitType, StringType,
+  IntegerType, Eof =
     Value
 
 }

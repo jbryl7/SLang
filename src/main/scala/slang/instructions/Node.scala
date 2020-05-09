@@ -1,3 +1,5 @@
 package slang.instructions
 
-trait Node {}
+trait Node {
+  def toString(): String
+}

@@ -7,9 +7,9 @@ import scala.collection.mutable.ListBuffer
 
 case class FunctionDeclaration(var identifier: String = "",
                                var returnType: TokenType = TokenType.Type,
-                               var body: Block = Block(),
                                var parameters: ListBuffer[Parameter] =
-                                 ListBuffer())
+                                 ListBuffer(),
+                               var body: Block = Block())
     extends Node
     with Instruction {
 
