@@ -14,7 +14,7 @@ case class FunctionDeclaration(var identifier: String = "",
     with Instruction {
 
   override def execute(scope: Scope): Instruction = ???
-  def setParentScope(scope: Scope) = body.setParentScope(scope)
+  def setParentScope(scope: Option[Scope]) = body.setParentScope(scope)
   def setScope(scope: Scope) = body.setScope(scope)
   def getParameter(name: String): Option[Parameter] =
     parameters.find(_.name == name)

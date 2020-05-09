@@ -7,7 +7,7 @@ case class Block(instructions: ListBuffer[Node] = ListBuffer())
     with Instruction {
   def addInstruction(instruction: Node) = instructions.append(instruction)
   var scope = Scope()
-  def setParentScope(scope: Scope): Unit =
+  def setParentScope(scope: Option[Scope]): Unit =
     this.scope.setParentScope(scope)
 
   def setScope(scope: Scope): Unit =

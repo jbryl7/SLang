@@ -14,20 +14,8 @@ case class FunctionCall(identifier: String,
 
   def execute(scope: Scope) = ???
 
-  def getFunctionFromScope(scope: Scope): Option[FunctionDeclaration] = {
-    var tmpScope = scope
-    var maybeFun = Option.empty[FunctionDeclaration]
-    breakable {
-      while (maybeFun.isEmpty) {
-        if (scope.isInScope(identifier))
-          maybeFun = Some(scope.functions(identifier))
-        else
-          tmpScope = tmpScope.parentScope
-        if (tmpScope == null) break
-      }
-    }
-    maybeFun
-  }
+  def getFunctionFromScope(scope: Scope): Option[FunctionDeclaration] =
+    scope.getFunctionDeclaration(identifier)
 
   def checkParameters(fun: FunctionDeclaration): Unit = {
     if (fun.parameters.size != arguments.size)
