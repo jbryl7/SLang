@@ -1,6 +1,11 @@
 package slang.instructions
 
-case class Block() extends Node with Instruction {
+import scala.collection.mutable.ListBuffer
+
+case class Block(instructions: ListBuffer[Node] = ListBuffer())
+    extends Node
+    with Instruction {
+  def addInstruction(instruction: Node) = instructions.append(instruction)
   var scope = Scope()
   def setParentScope(scope: Scope): Unit =
     this.scope.setParentScope(scope)

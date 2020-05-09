@@ -4,9 +4,10 @@ import slang.lexer.TokenType.TokenType
 
 import scala.collection.mutable.ListBuffer
 
-class Expression extends Node with Instruction {
-  val operators: ListBuffer[TokenType] = ListBuffer()
-  val operands: ListBuffer[Node] = ListBuffer()
+class Expression(operators: ListBuffer[TokenType] = ListBuffer(),
+                 operands: ListBuffer[Node] = ListBuffer())
+    extends Node
+    with Instruction {
 
   def addOperator(operator: TokenType) = operators.append(operator)
   def addOperand(operand: Node) = operands.append(operand)
@@ -16,4 +17,6 @@ class Expression extends Node with Instruction {
 
   def execute(scope: Scope) = ???
   def evaluate() = ???
+  override def toString() =
+    f"Expression(\noperators: ${operators},\noperands:${operands})"
 }

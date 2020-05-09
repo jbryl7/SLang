@@ -4,7 +4,7 @@ import slang.lexer.TokenType._
 import slang.utils._
 import scala.collection.mutable
 
-case class Lexer(fileHandler: FileHandler) {
+case class Lexer(fileHandler: FileHandler) extends LexerInterface {
   def getNextToken: Option[Token] = {
     skipWhiteChars()
     val currentPosition = fileHandler.currentPosition.copy()
@@ -19,7 +19,7 @@ case class Lexer(fileHandler: FileHandler) {
         if (fileHandler.currentChar == '/')
           skipCommentAndReturnToken()
         else
-          Some(Token(TokenType.Slash, '/', currentPosition))
+          Some(Token(TokenType.DivideOperator, '/', currentPosition))
 
       case c if tokenTypeFromLexem(c).isDefined =>
         Some(Token(tokenTypeFromLexem(c).get, c, currentPosition))
@@ -66,7 +66,7 @@ case class Lexer(fileHandler: FileHandler) {
       str += previousChar
     }
     fileHandler.consumeChar()
-    Some(Token(TokenType.String, str, position))
+    Some(Token(TokenType.StringLiteral, str, position))
   }
 
   def getIdentifierToken(c: Char, position: CurrentPosition): Option[Token] = {
@@ -81,11 +81,11 @@ case class Lexer(fileHandler: FileHandler) {
     var retToken: Option[Token] = None
     var num: String = ""
     if (c == '0')
-      retToken = Some(Token(TokenType.Number, c, position))
+      retToken = Some(Token(TokenType.IntegerLiteral, c, position))
     else {
       num = c.toString
       while (fileHandler.currentChar.isDigit) num += fileHandler.consumeChar
-      retToken = Some(Token(TokenType.Number, num, position))
+      retToken = Some(Token(TokenType.IntegerLiteral, num, position))
     }
     if (fileHandler.currentChar.isLetter) {
       ExceptionHandler.reportException(
@@ -99,7 +99,9 @@ case class Lexer(fileHandler: FileHandler) {
     ("&&", And),
     (EOF.toString(), Eof),
     ("||", Or),
-    ("Int", Type),
+    ("Int", IntegerType),
+    ("String", StringType),
+    ("Unit", UnitType),
     ("else", Else),
     ("if", If),
     ("def", Fun),
@@ -120,10 +122,10 @@ case class Lexer(fileHandler: FileHandler) {
     (")", RightParenthesis),
     ("}", RightBrace),
     ("{", LeftBrace),
-    ("*", Star),
+    ("*", MultiplicativeOperator),
     ("+", Plus),
     ("-", Minus),
-    ("/", Slash),
+    ("/", DivideOperator),
     (",", Comma),
     (".", Dot),
     ("Nil", NIL),

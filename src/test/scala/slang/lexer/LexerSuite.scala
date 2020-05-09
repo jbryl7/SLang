@@ -13,13 +13,15 @@ class LexerSuite extends AnyFlatSpec with Matchers {
   val escapedString = "\"string with \\\"escaping\\\"\""
   val escapedStringAfterLexer = "string with \\\"escaping\\\""
   val escapedStringToken: Token =
-    Token(TokenType.String, escapedStringAfterLexer, CurrentPosition(0, 0))
+    Token(TokenType.StringLiteral,
+          escapedStringAfterLexer,
+          CurrentPosition(0, 0))
   val escapedStringWithComment: String = escapedString + "// comment"
 
   "number in source" should "return correct number token" in {
     val number = "42"
     val returnedTokens = getTokensForCode(number)
-    returnedTokens shouldEqual List(Token(TokenType.Number,
+    returnedTokens shouldEqual List(Token(TokenType.IntegerLiteral,
                                           number,
                                           CurrentPosition(0, 0)),
                                     eofToken(0, 1)).map(Some(_))
@@ -69,7 +71,7 @@ class LexerSuite extends AnyFlatSpec with Matchers {
       Token(TokenType.LeftParenthesis, "(", CurrentPosition(0, 7)),
       Token(TokenType.RightParenthesis, ")", CurrentPosition(0, 8)),
       Token(TokenType.Colon, ":", CurrentPosition(0, 9)),
-      Token(TokenType.Type, "Int", CurrentPosition(0, 11)),
+      Token(TokenType.IntegerType, "Int", CurrentPosition(0, 11)),
       Token(TokenType.Assign, "=", CurrentPosition(0, 15)),
       eofToken(0, 16)
     )
@@ -83,9 +85,9 @@ class LexerSuite extends AnyFlatSpec with Matchers {
       Token(TokenType.LeftParenthesis, "(", CurrentPosition(0, 4)),
       Token(TokenType.Identifier, "i", CurrentPosition(0, 5)),
       Token(TokenType.ForArrow, "<-", CurrentPosition(0, 7)),
-      Token(TokenType.Number, "0", CurrentPosition(0, 10)),
+      Token(TokenType.IntegerLiteral, "0", CurrentPosition(0, 10)),
       Token(TokenType.Until, "until", CurrentPosition(0, 12)),
-      Token(TokenType.Number, "10", CurrentPosition(0, 18)),
+      Token(TokenType.IntegerLiteral, "10", CurrentPosition(0, 18)),
       Token(TokenType.RightParenthesis, ")", CurrentPosition(0, 20)),
       eofToken(0, 20)
     )

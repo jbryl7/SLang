@@ -1,18 +1,20 @@
-
-xd.heja.majo()
-xd.heja.majo()
-
-var s: Int = 1 //"\" hejka \"" // tego nie widac
-def xd(arg1: Int) = {
-}
-xd(ar)
-var x: Int = 5
 def foo(n: Int): Int = {
     print(n)
 }
+def hejka(arg1: Int): Unit = {
+}
+
+xd.heja.majo()
+xd.heja.majo()
+var s: Int = 1 * (1 + 4) + 3
+xd()
+xd(ar)
+var x: Int = 5
 
 if (x == "") {
     print("hello")
 } else {
     foo(x)
-}
+
+
+

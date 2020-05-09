@@ -7,11 +7,12 @@ import scala.collection.mutable.ListBuffer
 
 case class FunctionDeclaration(var identifier: String = "",
                                var returnType: TokenType = TokenType.Type,
-                               var body: Block = Block())
+                               var body: Block = Block(),
+                               var parameters: ListBuffer[Parameter] =
+                                 ListBuffer())
     extends Node
     with Instruction {
 
-  var parameters: ListBuffer[Parameter] = ListBuffer()
   override def execute(scope: Scope): Instruction = ???
   def setParentScope(scope: Scope) = body.setParentScope(scope)
   def setScope(scope: Scope) = body.setScope(scope)

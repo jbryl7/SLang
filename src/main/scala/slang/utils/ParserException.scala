@@ -12,12 +12,14 @@ case class ParserException(exceptionType: ParserExceptionType)
       "Invalid expression"
     case ParserExceptionType.DotWithoutIdentifier =>
       "Expected identifier after object."
+    case ParserExceptionType.UnexpectedEOF =>
+      "Unexpected end of file."
   }
   override def toString: String = message
 }
 
 case object ParserExceptionType extends Enumeration {
   type ParserExceptionType = Value
-  val InvalidExpression, DotWithoutIdentifier = Value
+  val InvalidExpression, UnexpectedEOF, DotWithoutIdentifier = Value
 
 }
