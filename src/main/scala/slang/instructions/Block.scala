@@ -5,6 +5,7 @@ import scala.collection.mutable.ListBuffer
 case class Block(instructions: ListBuffer[Node] = ListBuffer())
     extends Node
     with Instruction {
+
   def addInstruction(instruction: Node) = instructions.append(instruction)
   var scope = Scope()
   def setParentScope(scope: Option[Scope]): Unit =

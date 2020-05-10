@@ -1,13 +1,6 @@
 package slang.instructions
 
-import slang.utils.{
-  ExceptionHandler,
-  MyRuntimeException,
-  MyRuntimeExceptionType,
-  RuntimeException,
-  RuntimeExceptionType
-}
-
+import slang.utils._
 import scala.collection.mutable
 
 case class Scope(functions: mutable.Map[String, FunctionDeclaration] =

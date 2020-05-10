@@ -10,6 +10,10 @@ case class MyRuntimeException(exceptionType: MyRuntimeExceptionType)
   val message: String = exceptionType match {
     case MyRuntimeExceptionType.IdentifierNotInScope =>
       "Identifier not in scope"
+    case MyRuntimeExceptionType.InvalidNumberOfArguments =>
+      "invalid number of arguments"
+    case MyRuntimeExceptionType.InvalidArgumentException =>
+      "Invalid argument provided"
 
   }
   override def toString: String = message
@@ -17,5 +21,7 @@ case class MyRuntimeException(exceptionType: MyRuntimeExceptionType)
 
 case object MyRuntimeExceptionType extends Enumeration {
   type MyRuntimeExceptionType = Value
-  val IdentifierNotInScope = Value
+  val IdentifierNotInScope, InvalidArgumentException, InvalidNumberOfArguments =
+    Value
+
 }

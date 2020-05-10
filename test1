@@ -1,11 +1,12 @@
 class Class { var x: Int = 5 }
-var z: Class = Class()
-z.x = 10
-
+var x: Class = Class()
+z.x = -10
+//var Class: Class = Class()
 def foo(n: Int): Int = {
     x = n
     print(n)
 }
+
 def hejka(arg1: Int): Unit = {
     var y: Int = 5
     def h():Unit = {
@@ -16,7 +17,6 @@ xd.heja.majo()
 var s: Int = 1 * (1 + 4) + 3
 xd()
 xd(ar)
-var x: Int = 5
 
 if (x == "") {
     print("hello")

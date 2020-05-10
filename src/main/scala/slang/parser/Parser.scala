@@ -29,13 +29,11 @@ case class Parser(lexer: LexerInterface) {
         maybeParsedStatement = parseInstruction(currentScope)
       }
     }
-    println(program.instructions)
     program
   }
 
   def parseClassDeclaration(scope: Scope): Option[Node] = {
     println("class declaration")
-
     accept(TokenType.Class)
     val identifier = currentToken.lexeme
     accept(TokenType.Identifier)
@@ -43,7 +41,12 @@ case class Parser(lexer: LexerInterface) {
     val classScope = Scope()
     parseBody(classScope)
     accept(TokenType.RightBrace)
-    Some(ClassDeclaration(identifier, classScope))
+    val declaration = ClassDeclaration(identifier, classScope)
+    if (!scope.addClass(declaration))
+      ExceptionHandler.reportException(
+        ParserException(ParserExceptionType.IdentifierAlreadyInScope),
+        Some(f"${currentToken.position} ${declaration.identifier}"))
+    Some(declaration)
   }
 
   def parseInstruction(scope: Scope): Option[Node] = {
@@ -65,9 +68,11 @@ case class Parser(lexer: LexerInterface) {
         None
     }
   }
-  def parseBody(scope: Scope, isFunBody: Boolean = false): Block = {
+  def parseBody(scope: Scope,
+                isFunBody: Boolean = false,
+                body: Option[Block] = None): Block = {
     println("fun body")
-    val block = Block()
+    val block = body.getOrElse(Block())
     var endOfBlock = true
     if (currentToken.tokenType == TokenType.LeftBrace) {
       accept(TokenType.LeftBrace)
@@ -93,13 +98,6 @@ case class Parser(lexer: LexerInterface) {
     } while (!endOfBlock)
 
     block
-  }
-  def openNewScope(): Unit = {
-    println("new scope")
-    accept(TokenType.LeftBrace)
-    program.addLocalScope()
-    currentScope = program.addLocalScope()
-
   }
 
   def parseCall(): Option[Node] = {
@@ -214,19 +212,23 @@ case class Parser(lexer: LexerInterface) {
     println("fun")
     accept(TokenType.Fun)
     val identifier = currentToken.lexeme
+    val startPosition = currentToken.position
+    val declaration = FunctionDeclaration(identifier)
     accept(TokenType.Identifier)
     accept(TokenType.LeftParenthesis)
-    val params = parseParameters()
+    declaration.setParameters(parseParameters())
+    declaration.body.setParentScope(Some(scope))
     accept(TokenType.RightParenthesis)
     accept(TokenType.Colon)
-    val funType = parseType()
+    declaration.returnType = parseType()
     accept(TokenType.Assign)
-    val body = parseBody(scope, isFunBody = true)
-    val declaration = FunctionDeclaration(identifier, funType, params, body)
+    parseBody(declaration.body.scope,
+              isFunBody = true,
+              body = Some(declaration.body))
     if (!scope.addFunction(declaration))
       ExceptionHandler.reportException(
         ParserException(ParserExceptionType.IdentifierAlreadyInScope),
-        Some(f"${currentToken.position} ${declaration.identifier}"))
+        Some(f"${startPosition} ${declaration.identifier}"))
     Some(declaration)
   }
 
@@ -350,7 +352,7 @@ case class Parser(lexer: LexerInterface) {
         val myInt = MyInt(currentToken.lexeme.toInt * sign)
         accept(TokenType.IntegerLiteral)
         myInt
-      case _ => println("numberProblem"); MyInt()
+      case _ => println("something impossible happened"); MyInt()
     }
   }
 
@@ -379,7 +381,7 @@ case class Parser(lexer: LexerInterface) {
         val ret = MyString(currentToken.lexeme)
         accept(TokenType.StringLiteral)
         ret
-      case _ => println("literalProblem"); MyString()
+      case _ => println("something impossible happened"); MyString()
     }
   }
   def accept(tokenType: TokenType): Boolean = accept(List(tokenType))

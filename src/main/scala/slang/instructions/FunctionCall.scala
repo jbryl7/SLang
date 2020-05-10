@@ -20,7 +20,7 @@ case class FunctionCall(identifier: String,
   def checkParameters(fun: FunctionDeclaration): Unit = {
     if (fun.parameters.size != arguments.size)
       ExceptionHandler.reportException(
-        RuntimeException(RuntimeExceptionType.InvalidNumberOfArguments))
+        MyRuntimeException(MyRuntimeExceptionType.InvalidNumberOfArguments))
     fun.parameters
       .zip(arguments)
       .foreach(pair => checkParameter(pair._1, TokenType.Type))
@@ -28,6 +28,6 @@ case class FunctionCall(identifier: String,
   def checkParameter(parameter: Parameter, givenType: TokenType): Unit = {
     if (parameter.parameterType != givenType)
       ExceptionHandler.reportException(
-        RuntimeException(RuntimeExceptionType.InvalidArgumentException))
+        MyRuntimeException(MyRuntimeExceptionType.InvalidArgumentException))
   }
 }
