@@ -16,4 +16,10 @@ case class ClassDeclaration(
   def isInScope(identifier: String): Boolean = classScope.isInScope(identifier)
 
   override def execute(scope: Scope): Instruction = ???
+
+  override def toString(nested: Int): String = {
+    val nest = getNest(nested)
+    f"\n${nest}ClassDeclaration\n${nest} identifier ${identifier}\n${nest} classType: ${classType}\n${nest} classScope:${classScope
+      .toString(nested + 1)}"
+  }
 }

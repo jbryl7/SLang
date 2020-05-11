@@ -8,7 +8,8 @@ import scala.collection.mutable.ListBuffer
 import util.control.Breaks._
 
 case class FunctionCall(identifier: String,
-                        var arguments: ListBuffer[Node] = ListBuffer())
+                        var arguments: ListBuffer[Node] = ListBuffer(),
+                        maybeAttributeCall: Option[Node] = None)
     extends Node
     with Instruction {
 
@@ -29,5 +30,14 @@ case class FunctionCall(identifier: String,
     if (parameter.parameterType != givenType)
       ExceptionHandler.reportException(
         MyRuntimeException(MyRuntimeExceptionType.InvalidArgumentException))
+  }
+
+  override def toString(nested: Int): String = {
+    val nest = getNest(nested)
+    f"\n${nest}FunctionCall\n${nest} identifier ${identifier}\n${nest} maybeAttributeCall ${maybeAttributeCall
+      .map(_.toString(nested + 1))
+      .getOrElse(" None")} \n${nest} arguments: ${arguments
+      .map(_.toString(nested + 1))
+      .mkString}\n${nest}"
   }
 }

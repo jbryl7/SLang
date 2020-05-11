@@ -9,4 +9,9 @@ case class MyString(var value: String = "") extends Literal[String] {
 
   override def myType(): TokenType = TokenType.StringType // todo
   override def execute(scope: Scope): MyString = this
+
+  override def toString(nested: Int): String = {
+    val nest = getNest(nested)
+    f"\n${nest}MyString\n${nest}value: ${value}\n${nest}myType: ${myType()}"
+  }
 }

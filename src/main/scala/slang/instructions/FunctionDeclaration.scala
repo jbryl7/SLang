@@ -30,4 +30,11 @@ case class FunctionDeclaration(var identifier: String = "",
     noDeclarationOfVariableWithTheSameNameAsParam
   }
 
+  override def toString(nested: Int): String = {
+    val nest = getNest(nested)
+    f"\n${nest}FunctionDeclaration\n${nest} returnType: ${returnType}\n${nest} params:${parameters
+      .map(_.toString(nested + 1))
+      .mkString}\n${body.toString(nested + 1)}"
+  }
+
 }

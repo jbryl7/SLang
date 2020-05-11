@@ -14,7 +14,9 @@ case class Block(instructions: ListBuffer[Node] = ListBuffer())
   def setScope(scope: Scope): Unit =
     this.scope = scope
 
-  override def toString(): String =
-    f"\nBlock: \n${instructions.map(_.toString())} \nEnd of block\n"
+  override def toString(nested: Int): String = {
+    val nest = getNest(nested)
+    f"\n${nest}Block:\n${nest} instructions: ${instructions.map(_.toString(nested + 1)).mkString("")}"
+  }
   def execute(scope: Scope): Instruction = ???
 }

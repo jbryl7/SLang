@@ -72,5 +72,12 @@ case class Scope(functions: mutable.Map[String, FunctionDeclaration] =
     classes.keys.toList ++ parentScope.toList
       .flatMap(_.getClassesIdentifiers)
       .toList
-
+  def toString(nested: Int): String = {
+    var nest = ""
+    for (x <- 0 to nested)
+      nest += "  "
+    f"\n${nest}Scope\n${nest} vars${vars.values.map(_.toString(nested + 1)).mkString}\n${nest} classes${classes.values
+      .map(_.toString(nested + 1))
+      .mkString}\n${nest} functions${functions.values.map(_.toString(nested + 1)).mkString}"
+  }
 }

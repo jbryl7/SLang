@@ -16,7 +16,7 @@ object SLang extends App {
         val lexer = Lexer(fileHandler)
         val parser = Parser(lexer)
         val program = parser.parse()
-        println(program.instructions)
+        println(program)
         fileHandler.source.close()
     }
   } catch {

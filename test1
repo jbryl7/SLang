@@ -6,20 +6,3 @@ def foo(n: Int): Int = {
     x = n
     print(n)
 }
-
-def hejka(arg1: Int): Unit = {
-    var y: Int = 5
-    def h():Unit = {
-    }
-}
-
-xd.heja.majo()
-var s: Int = 1 * (1 + 4) + 3
-xd()
-xd(ar)
-
-if (x == "") {
-    print("hello")
-} else {
-    foo(x)
-}

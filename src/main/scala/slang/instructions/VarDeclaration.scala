@@ -31,6 +31,14 @@ class VarDeclaration(identifier: String,
     functions(functionCall.identifier)
 
   override def execute(scope: Scope): Instruction = this
-  override def toString(): String =
-    f"VarDeclaration(${identifier}, , ${varType}, ${expression})"
+  override def toString(nested: Int): String = {
+    val nest = getNest(nested)
+    f"\n${nest}VarDeclaration\n${nest} varType ${varType}\n${nest} isObjectFromClass ${isObjectFromClass}\n${nest} expression${expression
+      .map(_.toString(nested + 1))
+      .getOrElse("")}\n${nest}\n${nest} vars${vars.values
+      .map(_.toString(nested + 1))
+      .mkString}\n${nest} functions${functions.values
+      .map(_.toString(nested + 1))
+      .mkString}"
+  }
 }

@@ -13,6 +13,10 @@ class Expression(operators: ListBuffer[TokenType] = ListBuffer(),
   def addOperand(operand: Node): Unit = operands.append(operand)
 
   def execute(scope: Scope) = ???
-  override def toString() =
-    f"Expression(operators: ${operators} operands: ${operands}"
+  override def toString(nested: Int) = {
+    val nest = getNest(nested)
+    f"\n${nest}Expression\n${nest} operators:${operators.map(_.toString).mkString}\n${nest} operands: ${operands
+      .map(_.toString(nested + 1))
+      .mkString}"
+  }
 }

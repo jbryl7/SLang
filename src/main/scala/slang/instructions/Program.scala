@@ -12,4 +12,6 @@ case class Program(name: String) {
   def declareNewFunction = ()
   def getVar(varName: String) = ()
   def getCurrentScope(): Scope = currentScope
+  override def toString() =
+    f"\n${name} \ninstructions\n${instructions.map(_.toString(0)).mkString}"
 }
