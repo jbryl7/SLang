@@ -33,7 +33,6 @@ case class Parser(lexer: LexerInterface) {
   }
 
   def parseClassDeclaration(scope: Scope): Option[Node] = {
-    println("class declaration")
     accept(TokenType.Class)
     val identifier = currentToken.lexeme
     accept(TokenType.Identifier)
@@ -50,7 +49,6 @@ case class Parser(lexer: LexerInterface) {
   }
 
   def parseInstruction(scope: Scope): Option[Node] = {
-    println("statement")
     maybeToken match {
       case Some(Token(TokenType.LeftBrace, _, _)) =>
         Some(parseBody(Scope(parentScope = Some(scope))))
@@ -71,7 +69,6 @@ case class Parser(lexer: LexerInterface) {
   def parseBody(scope: Scope,
                 isFunBody: Boolean = false,
                 body: Option[Block] = None): Block = {
-    println("fun body")
     val block = body.getOrElse(Block())
     var endOfBlock = true
     if (currentToken.tokenType == TokenType.LeftBrace) {
@@ -101,19 +98,15 @@ case class Parser(lexer: LexerInterface) {
   }
 
   def parseCall(): Option[Node] = {
-    println("just call")
     val identifier = currentToken.lexeme
-
     accept(TokenType.Identifier)
     currentToken.tokenType match {
       case TokenType.LeftParenthesis =>
-        println("funCall")
         accept(TokenType.LeftParenthesis)
         val arguments = parseArguments()
         accept(TokenType.RightParenthesis)
         Some(FunctionCall(identifier, arguments))
-      case TokenType.Dot => // todo correct this, to use object scope
-        println("object member call")
+      case TokenType.Dot =>
         accept(TokenType.Dot)
         val call = parseCall()
         Some(ObjectCall(identifier, call))
@@ -127,13 +120,11 @@ case class Parser(lexer: LexerInterface) {
   }
 
   def parseReturn(scope: Scope): Option[Node] = {
-    println("return")
     accept(TokenType.Return)
     Some(parseExpression())
   }
 
   def parseIf(scope: Scope): Option[Node] = {
-    println("if")
     accept(TokenType.If)
     accept(TokenType.LeftParenthesis)
 
@@ -151,7 +142,6 @@ case class Parser(lexer: LexerInterface) {
   }
 
   def parseArguments(): ListBuffer[Node] = {
-    println("args")
     val arguments: ListBuffer[Node] = ListBuffer();
     while (currentToken.tokenType != TokenType.RightParenthesis) {
       val argPossibleTypes = List(TokenType.IntegerLiteral,
@@ -177,7 +167,6 @@ case class Parser(lexer: LexerInterface) {
   }
 
   def parseParameters(): ListBuffer[Parameter] = {
-    println("params")
     val params: ListBuffer[Parameter] = ListBuffer()
     while (currentToken.tokenType != TokenType.RightParenthesis) {
       val identifier = currentToken.lexeme
@@ -192,7 +181,6 @@ case class Parser(lexer: LexerInterface) {
   }
 
   def parseVarDeclaration(scope: Scope): Option[Node] = {
-    println("var declaration")
     accept(TokenType.Var)
     val identifier = currentToken.lexeme
     accept(TokenType.Identifier)
@@ -209,7 +197,6 @@ case class Parser(lexer: LexerInterface) {
   }
 
   def parseFunctionDeclaration(scope: Scope): Option[Node] = {
-    println("fun")
     accept(TokenType.Fun)
     val identifier = currentToken.lexeme
     val startPosition = currentToken.position
@@ -233,8 +220,6 @@ case class Parser(lexer: LexerInterface) {
   }
 
   def parseExpression(): Node = {
-    println("expression")
-
     if (TokenType.LeftBrace == currentToken.tokenType) // var x: Int = {x}
       ExceptionHandler.reportException(
         ParserException(ParserExceptionType.InvalidExpression),
@@ -253,7 +238,6 @@ case class Parser(lexer: LexerInterface) {
   }
 
   def parseMultiplicativeExpression(): Node = {
-    println("multiplicative exp")
     val expression = new Expression()
     expression.addOperand(parsePrimaryExpression())
     while (List(TokenType.MultiplicativeOperator, TokenType.DivideOperator)
@@ -266,7 +250,6 @@ case class Parser(lexer: LexerInterface) {
   }
 
   def parsePrimaryExpression(): Node = {
-    println("primary exp")
     val expression = new Expression()
     currentToken.tokenType match {
       case TokenType.LeftParenthesis =>
@@ -280,7 +263,6 @@ case class Parser(lexer: LexerInterface) {
   }
 
   def parseCondition(): Condition = {
-    println("condition")
     val condition = Condition()
     condition.addOperand(parseAndCondition())
     while (currentToken.tokenType == TokenType.Or) {
@@ -291,7 +273,6 @@ case class Parser(lexer: LexerInterface) {
     condition
   }
   def parseAndCondition(): Condition = {
-    println("condition")
     val condition = Condition()
     condition.addOperand(parseEqualityCondition())
     while (currentToken.tokenType == TokenType.And) {
@@ -302,7 +283,6 @@ case class Parser(lexer: LexerInterface) {
     condition
   }
   def parseEqualityCondition(): Condition = {
-    println("equalityCondition")
     val condition = Condition()
     condition.addOperand(parseRelationalCondition())
     val equalityOperators = List(TokenType.Equal, TokenType.BangEqual)
@@ -316,7 +296,6 @@ case class Parser(lexer: LexerInterface) {
   }
 
   def parseRelationalCondition(): Condition = {
-    println("relationalCondition")
     val condition = Condition()
     condition.addOperand(parsePrimaryCondition())
     val relationalOperators = List(TokenType.Less,
@@ -333,7 +312,6 @@ case class Parser(lexer: LexerInterface) {
   }
 
   def parsePrimaryCondition(): Condition = {
-    println("primaryCondition")
     val condition = Condition()
     if (currentToken.tokenType == TokenType.LeftParenthesis) {
       accept(TokenType.LeftParenthesis)
@@ -346,7 +324,6 @@ case class Parser(lexer: LexerInterface) {
   }
 
   def parseNumber(sign: Int = 1): MyInt = {
-    println("number")
     currentToken.tokenType match {
       case TokenType.IntegerLiteral =>
         val myInt = MyInt(currentToken.lexeme.toInt * sign)
@@ -357,7 +334,6 @@ case class Parser(lexer: LexerInterface) {
   }
 
   def parseType(): TokenType = {
-    println("type")
     val currentType = currentToken.tokenType
     accept(
       List(TokenType.UnitType,
@@ -367,7 +343,6 @@ case class Parser(lexer: LexerInterface) {
     currentType
   }
   def parseLiteral(): Node = {
-    println("literal")
     currentToken.tokenType match {
       case TokenType.Minus =>
         accept(TokenType.Minus)
