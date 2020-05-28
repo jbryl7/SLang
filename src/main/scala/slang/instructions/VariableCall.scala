@@ -2,9 +2,7 @@ package slang.instructions
 
 case class VariableCall(identifier: String,
                         maybeAttributeCall: Option[Node] = None)
-    extends Instruction
-    with Node {
-  override def execute(scope: Scope): Instruction = this
+    extends Node {
   override def toString(nested: Int): String = {
     val nest = getNest(nested)
 

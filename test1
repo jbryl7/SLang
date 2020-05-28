@@ -1,8 +1,16 @@
-class Class { var x: Int = 5 }
+
 var x: Class = Class()
 z.x = -10
-//var Class: Class = Class()
+var Class: Class = Class()
 def foo(n: Int): Int = {
-    x = n
-    print(n)
+ x = n
+   print(n)
 }
+class Class {
+
+
+
+    def foo(n: Int): Int =
+        print(x)
+        var x: Int = 15
+        }

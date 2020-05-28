@@ -27,6 +27,7 @@ case class ParserException(exceptionType: ParserExceptionType)
 case object ParserExceptionType extends Enumeration {
   type ParserExceptionType = Value
   val InvalidExpression, UnexpectedEOF, DotWithoutIdentifier,
-  IdentifierAlreadyInScope, ReturnOutsideOfFunction, UnexpectedToken = Value
+  InvalidExpressionInClassDeclaration, IdentifierAlreadyInScope,
+  ReturnOutsideOfFunction, UnexpectedToken = Value
 
 }

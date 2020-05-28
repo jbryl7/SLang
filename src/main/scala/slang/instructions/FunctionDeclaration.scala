@@ -12,23 +12,10 @@ case class FunctionDeclaration(var identifier: String = "",
                                var parameters: ListBuffer[Parameter] =
                                  ListBuffer(),
                                var body: Block = Block())
-    extends Node
-    with Instruction {
+    extends Node {
 
-  override def execute(scope: Scope): Instruction = ???
-  def setParentScope(scope: Option[Scope]) = body.setParentScope(scope)
-  def setScope(scope: Scope) = body.setScope(scope)
   def getParameter(name: String): Option[Parameter] =
     parameters.find(_.name == name)
-  def setParameters(params: ListBuffer[Parameter]) = { // todo - think of something that would solve types
-    val noDeclarationOfVariableWithTheSameNameAsParam: Boolean = !params.forall(
-      param =>
-        body.scope.addVariable(
-          new VarDeclaration(param.name, None, param.parameterType)))
-
-    parameters = params
-    noDeclarationOfVariableWithTheSameNameAsParam
-  }
 
   override def toString(nested: Int): String = {
     val nest = getNest(nested)

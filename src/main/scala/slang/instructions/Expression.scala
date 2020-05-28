@@ -4,10 +4,9 @@ import slang.lexer.TokenType.TokenType
 
 import scala.collection.mutable.ListBuffer
 
-class Expression(operators: ListBuffer[TokenType] = ListBuffer(),
-                 operands: ListBuffer[Node] = ListBuffer())
-    extends Node
-    with Instruction {
+class Expression(operands: ListBuffer[Node] = ListBuffer(),
+                 operators: ListBuffer[TokenType] = ListBuffer())
+    extends Node {
 
   def addOperator(operator: TokenType): Unit = operators.append(operator)
   def addOperand(operand: Node): Unit = operands.append(operand)

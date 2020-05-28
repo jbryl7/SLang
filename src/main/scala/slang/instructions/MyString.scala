@@ -8,7 +8,6 @@ case class MyString(var value: String = "") extends Literal[String] {
   def getVal(): String = value
 
   override def myType(): TokenType = TokenType.StringType // todo
-  override def execute(scope: Scope): MyString = this
 
   override def toString(nested: Int): String = {
     val nest = getNest(nested)

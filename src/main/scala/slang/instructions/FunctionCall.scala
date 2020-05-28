@@ -10,10 +10,7 @@ import util.control.Breaks._
 case class FunctionCall(identifier: String,
                         var arguments: ListBuffer[Node] = ListBuffer(),
                         maybeAttributeCall: Option[Node] = None)
-    extends Node
-    with Instruction {
-
-  def execute(scope: Scope) = ???
+    extends Node {
 
   def getFunctionFromScope(scope: Scope): Option[FunctionDeclaration] =
     scope.getFunctionDeclaration(identifier)

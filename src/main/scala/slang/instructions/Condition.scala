@@ -1,5 +1,9 @@
 package slang.instructions
 
-case class Condition() extends Expression {
-  override def execute(scope: Scope) = ???
-}
+import slang.lexer.TokenType.TokenType
+
+import scala.collection.mutable.ListBuffer
+
+case class Condition(operands: ListBuffer[Node] = ListBuffer(),
+                     operators: ListBuffer[TokenType] = ListBuffer())
+    extends Expression {}

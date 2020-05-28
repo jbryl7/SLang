@@ -97,6 +97,7 @@ case class Lexer(fileHandler: FileHandler) extends LexerInterface {
 
   val mapLexemToTokenType: mutable.Map[String, TokenType] = mutable.Map(
     ("&&", And),
+    ("print", Print),
     (EOF.toString(), Eof),
     ("||", Or),
     ("Int", IntegerType),

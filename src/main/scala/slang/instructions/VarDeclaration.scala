@@ -7,38 +7,16 @@ import scala.collection.mutable
 
 class VarDeclaration(identifier: String,
                      expression: Option[Node],
-                     varType: TokenType,
-                     vars: mutable.Map[String, VarDeclaration] = mutable.Map(),
-                     functions: mutable.Map[String, FunctionDeclaration] =
-                       mutable.Map(),
-                     isObjectFromClass: Boolean = false)
-    extends Node
-    with Instruction {
+                     varType: TokenType)
+    extends Node {
   def getIdentifier: String = identifier
   def getExpression: Option[Node] = expression
   def getVarType: TokenType = varType
 
-  def fromClassDeclaration(identifier: String,
-                           classDeclaration: ClassDeclaration): VarDeclaration =
-    new VarDeclaration(identifier,
-                       None,
-                       varType = classDeclaration.classType,
-                       isObjectFromClass = true)
-
-  def accessVar(variableCall: VariableCall): VarDeclaration =
-    vars(variableCall.identifier)
-  def accessFun(functionCall: FunctionCall): FunctionDeclaration =
-    functions(functionCall.identifier)
-
-  override def execute(scope: Scope): Instruction = this
   override def toString(nested: Int): String = {
     val nest = getNest(nested)
-    f"\n${nest}VarDeclaration\n${nest} varType ${varType}\n${nest} isObjectFromClass ${isObjectFromClass}\n${nest} expression${expression
+    f"\n${nest}VarDeclaration\n${nest} varType ${varType}\n${nest} expression${expression
       .map(_.toString(nested + 1))
-      .getOrElse("")}\n${nest}\n${nest} vars${vars.values
-      .map(_.toString(nested + 1))
-      .mkString}\n${nest} functions${functions.values
-      .map(_.toString(nested + 1))
-      .mkString}"
+      .getOrElse("")}\n${nest}\n${nest}"
   }
 }
