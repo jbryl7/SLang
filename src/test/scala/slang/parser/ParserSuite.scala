@@ -4,7 +4,7 @@ import org.scalatest.matchers.should.Matchers
 import org.scalatest.flatspec.AnyFlatSpec
 import slang.{EOF, lexer}
 import org.scalatest.matchers._
-import slang.instructions.Program
+import slang.instructions.{Block}
 import slang.lexer.{FileHandler, Lexer, Token}
 import slang.utils.{LexerException, ParserException}
 
@@ -13,7 +13,7 @@ import scala.language.postfixOps
 
 class ParserSuite extends AnyFlatSpec with Matchers {
 
-  def parseCode(code: String): Program = {
+  def parseCode(code: String): Block = {
     Parser(Lexer(FileHandler(code = Some(code)))).parse()
   }
 

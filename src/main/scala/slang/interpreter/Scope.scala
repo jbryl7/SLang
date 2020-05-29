@@ -1,6 +1,11 @@
-package slang.instructions
+package slang.interpreter
 
-import slang.utils._
+import slang.instructions.{
+  ClassDeclaration,
+  FunctionDeclaration,
+  VarDeclaration
+}
+
 import scala.collection.mutable
 
 case class Scope(functions: mutable.Map[String, FunctionDeclaration] =
@@ -9,7 +14,6 @@ case class Scope(functions: mutable.Map[String, FunctionDeclaration] =
                  vars: mutable.Map[String, VarDeclaration] = mutable.Map(),
                  var parentScope: Option[Scope] = None) {
 
-  def setParentScope(scope: Option[Scope]): Unit = parentScope = scope
   def isInScope(identifier: String): Boolean =
     isClassInScope(identifier) || isFunInScope(identifier) || isVarInScope(
       identifier)

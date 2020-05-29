@@ -11,24 +11,22 @@ case class Parser(lexer: LexerInterface) {
   var maybeToken: Option[Token] = None
   var maybeParsedStatement: Option[Node] = None
   var currentToken: Token = _
-  val program: Program = Program("defaultName")
 
-  def parse(): Program = {
+  def parse(): Block = {
     maybeToken = lexer.getNextToken
     currentToken = maybeToken.get
     maybeParsedStatement = parseStatement()
-
+    val instructions: ListBuffer[Node] = ListBuffer()
     breakable {
       while (maybeParsedStatement.isDefined) {
-        program.addStatement(maybeParsedStatement.get)
+        instructions.append(maybeParsedStatement.get)
         println(currentToken)
         if (currentToken.tokenType == TokenType.Eof)
           break
         maybeParsedStatement = parseStatement()
       }
     }
-
-    program
+    Block(instructions)
   }
 
   def parseStatement(): Option[Node] = {

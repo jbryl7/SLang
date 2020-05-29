@@ -1,5 +1,6 @@
 package slang.instructions
 
+import slang.interpreter.Scope
 import slang.lexer.TokenType.TokenType
 
 import scala.collection.mutable.ListBuffer
