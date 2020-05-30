@@ -1,4 +1,5 @@
 package slang.instructions
+import slang.instructions.Statements.Visitor
 import slang.lexer.Token
 
 import scala.collection.mutable.ListBuffer
@@ -16,6 +17,8 @@ object Statements {
   }
 
   case class Block(statements: ListBuffer[Statements]) extends Statements {
+    override def accept[R](visitor: Visitor[R]): R =
+      visitor.visitBlockStmt(this)
     override def toString: String = toString(0)
     override def toString(nested: Int): String = {
       val nest = getNest(nested)
@@ -26,6 +29,8 @@ object Statements {
   case class ClassStatement(name: Token, classBody: ClassBody)
       extends Statements {
 
+    override def accept[R](visitor: Visitor[R]): R =
+      visitor.visitClassStmt(this)
     override def toString(nested: Int): String = {
       val nest = getNest(nested)
       f"\n${nest}Class\n ${nest}name${name}\n ${nest}classBody${classBody
@@ -34,7 +39,8 @@ object Statements {
   }
 
   case class ExpressionStatement(expression: Expr) extends Statements {
-
+    override def accept[R](visitor: Visitor[R]): R =
+      visitor.visitExpressionStmt(this)
     override def toString(nested: Int): String = {
       val nest = getNest(nested)
       f"\n${nest}Expression${expression.toString(nested + 1)}"
@@ -46,6 +52,10 @@ object Statements {
                                params: ListBuffer[Parameter],
                                body: Block)
       extends Statements {
+
+    override def accept[R](visitor: Visitor[R]): R =
+      visitor.visitFunctionStmt(this)
+
     override def toString(nested: Int): String = {
       val nest = getNest(nested)
       f"\n${nest}Function\n ${nest}name${name}\n${nest} params:${params
@@ -59,6 +69,9 @@ object Statements {
                          elseBlock: Statements)
       extends Statements {
 
+    override def accept[R](visitor: Visitor[R]): R =
+      visitor.visitIfStmt(this)
+
     override def toString(nested: Int): String = {
       val nest = getNest(nested)
       f"\n${nest}IfStatement\n${nest} condition${condition.toString(nested + 2)}\n${nest} thenBlock${thenBlock
@@ -68,6 +81,9 @@ object Statements {
 
   case class PrintStatement(expression: Expr) extends Statements {
 
+    override def accept[R](visitor: Visitor[R]): R =
+      visitor.visitPrintStmt(this)
+
     override def toString(nested: Int): String = {
       val nest = getNest(nested)
       f"\n${nest}Print${expression.toString(nested + 1)}"
@@ -75,6 +91,9 @@ object Statements {
   }
 
   case class ReturnStatement(keyword: Token, value: Expr) extends Statements {
+
+    override def accept[R](visitor: Visitor[R]): R =
+      visitor.visitReturnStmt(this)
 
     override def toString(nested: Int): String = {
       val nest = getNest(nested)
@@ -85,6 +104,9 @@ object Statements {
 
   case class VarStatement(name: Token, initializer: Expr, varType: Token)
       extends Statements {
+
+    override def accept[R](visitor: Visitor[R]): R =
+      visitor.visitVarStmt(this)
 
     override def toString(nested: Int): String = {
       val nest = getNest(nested)
@@ -106,6 +128,8 @@ object Statements {
 }
 
 abstract class Statements extends Node {
+
+  def accept[R](visitor: Statements.Visitor[R]): R
   def toString(nested: Int): String = {
     val nest = getNest(nested)
     f"\n${nest} Statement"
