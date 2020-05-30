@@ -1,8 +1,8 @@
 package slang.parser
 import slang.instructions._
+import slang.instructions.customtypes.MyString
 import slang.instructions.expressions._
 import slang.instructions.statements._
-import slang.instructions.expressions.MyString
 import slang.lexer.TokenType.TokenType
 import slang.lexer._
 import slang.utils._
@@ -35,7 +35,7 @@ case class Parser(lexer: LexerInterface) {
     currentToken.tokenType match {
       case TokenType.Print      => parsePrint()
       case TokenType.Return     => parseReturn()
-      case TokenType.Identifier => ExpressionStatement(assignment)
+      case TokenType.Identifier => ExpressionStatement(parseAssignment)
       case TokenType.Var        => parseVarDeclaration()
       case TokenType.Fun        => parseFunctionDeclaration()
       case TokenType.Class      => parseClassDeclaration()
@@ -125,7 +125,7 @@ case class Parser(lexer: LexerInterface) {
   def parseReturn(): Statement = {
     val tok = currentToken
     accept(TokenType.Return)
-    var expr: Expr = null
+    var expr: Expression = null
     if (currentToken.position.row == tok.position.row && currentToken.tokenType != TokenType.RightBrace)
       expr = parseExpression()
     ReturnStatement(tok, expr)
@@ -145,30 +145,6 @@ case class Parser(lexer: LexerInterface) {
     IfStatement(condition, ifBlock, elseBlock)
   }
 
-  def parseArguments(): ListBuffer[Expr] = {
-    val arguments: ListBuffer[Expr] = ListBuffer();
-    while (currentToken.tokenType != TokenType.RightParenthesis) {
-      val argPossibleTypes = List(TokenType.IntegerLiteral,
-                                  TokenType.StringLiteral,
-                                  TokenType.Identifier,
-                                  TokenType.Minus,
-                                  TokenType.LeftParenthesis)
-
-      currentToken.tokenType match {
-        case t if argPossibleTypes.contains(t) =>
-          arguments.append(parseExpression())
-        case _ =>
-          ExceptionHandler.reportException(
-            ParserException(ParserExceptionType.InvalidExpression),
-            Some(
-              f"${currentToken.position} Expected one of ${argPossibleTypes}. Provided ${currentToken.tokenType}")
-          )
-      }
-      if (currentToken.tokenType == TokenType.Comma)
-        accept(TokenType.Comma)
-    }
-    arguments
-  }
   def parseVarDeclaration(): VarStatement = {
     accept(TokenType.Var)
     val identifier = currentToken
@@ -187,62 +163,62 @@ case class Parser(lexer: LexerInterface) {
     accept(TokenType.RightParenthesis)
     PrintStatement(expressionToPrint)
   }
-  def parseExpression(): Expr = {
-    assignment
+  def parseExpression(): Expression = {
+    parseAssignment
   }
 
-  private def assignment: Expr = {
-    var expr: Expr = or
+  private def parseAssignment: Expression = {
+    var expr: Expression = parseOr
     if (currentToken.tokenType == TokenType.Assign) {
       print("entered")
       accept(TokenType.Assign)
-      val value = assignment
+      val value = parseAssignment
       expr match {
-        case e: VariableExpr =>
-          expr = AssignExpr(e.name, value)
-        case e: GetExpr =>
-          expr = SetExpr(e.`object`, e.name, value)
+        case e: VariableExpression =>
+          expr = AssignExpression(e.name, value)
+        case e: GetExpression =>
+          expr = SetExpression(e.`object`, e.name, value)
       }
     }
     expr
   }
 
-  private def or = {
-    var expr = and
+  private def parseOr = {
+    var expr = parseAnd
     while ({ currentToken.tokenType == TokenType.Or }) {
       val operator = currentToken
       accept(currentToken.tokenType)
-      val right = and
+      val right = parseAnd
 
-      expr = LogicalExpr(expr, operator, right)
+      expr = LogicalExpression(expr, operator, right)
     }
     expr
   }
 
-  private def and = {
-    var expr = equality
+  private def parseAnd = {
+    var expr = parseEquality
     while (currentToken.tokenType == TokenType.And) {
       val operator = currentToken
       accept(currentToken.tokenType)
-      val right = equality
-      expr = LogicalExpr(expr, operator, right)
+      val right = parseEquality
+      expr = LogicalExpression(expr, operator, right)
     }
     expr
   }
 
-  private def equality = {
-    var expr = comparison
+  private def parseEquality = {
+    var expr = parseComparison
     while (currentToken.tokenType == TokenType.BangEqual || currentToken.tokenType == TokenType.Equal) {
       val operator = currentToken
       accept(currentToken.tokenType)
-      val right = comparison
-      expr = BinaryExpr(expr, operator, right)
+      val right = parseComparison
+      expr = BinaryExpression(expr, operator, right)
     }
     expr
   }
 
-  private def comparison = {
-    var expr = addition
+  private def parseComparison = {
+    var expr = parseAddition
     val comparisonOperators = List(TokenType.Greater,
                                    TokenType.GreaterEqual,
                                    TokenType.Less,
@@ -252,65 +228,71 @@ case class Parser(lexer: LexerInterface) {
     }) {
       val operator = currentToken
       accept(currentToken.tokenType)
-      val right = addition
-      expr = BinaryExpr(expr, operator, right)
+      val right = parseAddition
+      expr = BinaryExpression(expr, operator, right)
     }
     expr
   }
 
-  private def addition = {
-    var expr = multiplication
+  private def parseAddition = {
+    var expr = parseMultiplication
     while (currentToken.tokenType == TokenType.Plus || currentToken.tokenType == TokenType.Minus) {
       val operator = currentToken
       accept(currentToken.tokenType)
-      val right = multiplication
-      expr = BinaryExpr(expr, operator, right)
+      val right = parseMultiplication
+      expr = BinaryExpression(expr, operator, right)
     }
     expr
   }
 
-  private def multiplication = {
-    var expr = unary
+  private def parseMultiplication = {
+    var expr = parseUnary
     while (currentToken.tokenType == TokenType.MultiplicativeOperator || currentToken.tokenType == TokenType.DivideOperator) {
       val operator = currentToken
       accept(currentToken.tokenType)
-      val right = unary
-      expr = BinaryExpr(expr, operator, right)
+      val right = parseUnary
+      expr = BinaryExpression(expr, operator, right)
     }
     expr
   }
 
   //< addition-and-multiplication
   //> unary
-  private def unary: Expr =
+  private def parseUnary: Expression =
     if (currentToken.tokenType == TokenType.Minus || currentToken.tokenType == TokenType.Bang) {
       val operator = currentToken
       accept(currentToken.tokenType)
-      val right = unary
-      UnaryExpr(operator, right)
+      val right = parseUnary
+      UnaryExpression(operator, right)
 
-    } else call
+    } else parseCall
 
-  private def finishCall(callee: Expr): Expr = {
-    def acceptIfComma(): Boolean = {
+  private def finishCall(callee: Expression): Expression = {
+
+    accept(TokenType.LeftParenthesis)
+
+    val paren = currentToken
+    val arguments = parseArguments()
+    accept(TokenType.RightParenthesis)
+    CallExpression(callee, paren, arguments)
+  }
+
+  def parseArguments(): ListBuffer[Expression] = {
+    def acceptIfComma: Boolean = {
       val ret = currentToken.tokenType == TokenType.Comma
       if (ret)
         accept(TokenType.Comma)
       ret
     }
 
-    val arguments: ListBuffer[Expr] = ListBuffer()
-    accept(TokenType.LeftParenthesis)
+    val arguments: ListBuffer[Expression] = ListBuffer()
     if (currentToken.tokenType != TokenType.RightParenthesis)
-      do arguments.append(parseExpression()) while (acceptIfComma())
-
-    val paren = currentToken
-    accept(TokenType.RightParenthesis)
-    CallExpr(callee, paren, arguments)
+      do arguments.append(parseExpression()) while (acceptIfComma)
+    arguments
   }
 
-  private def call(): Expr = {
-    var expr = primary
+  private def parseCall(): Expression = {
+    var expr = parsePrimaryExpression
     breakable {
       while (true) {
         if (currentToken.tokenType == TokenType.LeftParenthesis)
@@ -320,7 +302,7 @@ case class Parser(lexer: LexerInterface) {
 
           val name = currentToken
           accept(TokenType.Identifier)
-          expr = GetExpr(expr, name)
+          expr = GetExpression(expr, name)
         } else break
       }
     }
@@ -328,42 +310,42 @@ case class Parser(lexer: LexerInterface) {
     expr
   }
 
-  private def primary: Expr = {
+  private def parsePrimaryExpression: Expression = {
     currentToken.tokenType match {
       case TokenType.False =>
         accept(TokenType.False)
-        LiteralExpr(false)
+        LiteralExpression(false)
 
       case TokenType.True =>
         accept(TokenType.True)
-        LiteralExpr(true)
+        LiteralExpression(true)
 
       case TokenType.IntegerLiteral =>
-        val ret = LiteralExpr(currentToken.lexeme.toInt)
+        val ret = LiteralExpression(currentToken.lexeme.toInt)
         accept(TokenType.IntegerLiteral)
         ret
       case TokenType.StringLiteral =>
-        val ret = LiteralExpr(MyString(currentToken.lexeme))
+        val ret = LiteralExpression(currentToken.lexeme)
         accept(TokenType.StringLiteral)
         ret
       case TokenType.This =>
-        val ret = ThisExpr(currentToken)
+        val ret = ThisExpression(currentToken)
         accept(TokenType.This)
         ret
       case TokenType.Identifier =>
-        val ret = VariableExpr(currentToken)
+        val ret = VariableExpression(currentToken)
         accept(TokenType.Identifier)
         ret
       case TokenType.LeftParenthesis =>
         accept(TokenType.LeftParenthesis)
         val expr = parseExpression()
         accept(TokenType.RightParenthesis)
-        GroupingExpr(expr)
+        GroupingExpression(expr)
       case _ =>
         ExceptionHandler.reportException(
           ParserException(ParserExceptionType.InvalidExpression),
           Some(currentToken.toString))
-        LiteralExpr(0)
+        LiteralExpression(0)
     }
   }
 

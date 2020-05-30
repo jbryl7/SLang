@@ -1,17 +1,17 @@
 package slang.instructions.expressions
 
 trait ExpressionVisitor[R] {
-  def evaluate(expr: Expr) =
+  def evaluate(expr: Expression) =
     expr.accept(this)
-  def visitSetExpr(set: SetExpr): R
-  def visitAssignExpr(expr: AssignExpr): R
-  def visitBinaryExpr(expr: BinaryExpr): R
-  def visitCallExpr(expr: CallExpr): R
-  def visitGetExpr(expr: GetExpr): R
-  def visitGroupingExpr(expr: GroupingExpr): R
-  def visitLiteralExpr(expr: LiteralExpr): R
-  def visitLogicalExpr(expr: LogicalExpr): R
-  def visitThisExpr(expr: ThisExpr): R
-  def visitUnaryExpr(expr: UnaryExpr): R
-  def visitVariableExpr(expr: VariableExpr): R
+  def visitSetExpr(set: SetExpression): R
+  def visitAssignExpr(expr: AssignExpression): R
+  def visitBinaryExpr(expr: BinaryExpression): R
+  def visitCallExpr(expr: CallExpression): R
+  def visitGetExpr(expr: GetExpression): R
+  def visitGroupingExpr(expr: GroupingExpression): R
+  def visitLiteralExpr(expr: LiteralExpression): R
+  def visitLogicalExpr(expr: LogicalExpression): R
+  def visitThisExpr(expr: ThisExpression): R
+  def visitUnaryExpr(expr: UnaryExpression): R
+  def visitVariableExpr(expr: VariableExpression): R
 }

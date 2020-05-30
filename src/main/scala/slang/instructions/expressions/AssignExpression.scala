@@ -2,7 +2,7 @@ package slang.instructions.expressions
 
 import slang.lexer.Token
 
-case class AssignExpr(name: Token, value: Expr) extends Expr {
+case class AssignExpression(name: Token, value: Expression) extends Expression {
   override def accept[R](visitor: ExpressionVisitor[R]): R =
     visitor.visitAssignExpr(this)
 

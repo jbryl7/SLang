@@ -1,6 +1,11 @@
 package slang.instructions.expressions
-case class MyString(value: String) extends AnyVal
-object MyString {
-  implicit def myStringToString(myString: MyString): String = myString.value
-  implicit def stringToMyString(string: String): MyString = MyString(string)
+
+import slang.instructions.Node
+
+trait Expression extends Node {
+  def accept[R](visitor: ExpressionVisitor[R]): R
+  override def toString(nested: Int): String = {
+    val nest = getNest(nested)
+    f"\n${nest} Expr"
+  }
 }

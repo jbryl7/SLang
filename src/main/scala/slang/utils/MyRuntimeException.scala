@@ -14,14 +14,18 @@ case class MyRuntimeException(exceptionType: MyRuntimeExceptionType)
       "invalid number of arguments"
     case MyRuntimeExceptionType.InvalidArgumentException =>
       "Invalid argument provided"
-
+    case MyRuntimeExceptionType.MinusNotANumber =>
+      "Invalid expression. MINUS <not a number>"
+    case MyRuntimeExceptionType.SumIncompatibleTypes =>
+      "You can not sum up these types"
   }
   override def toString: String = message
 }
 
 case object MyRuntimeExceptionType extends Enumeration {
   type MyRuntimeExceptionType = Value
-  val IdentifierNotInScope, InvalidArgumentException, InvalidNumberOfArguments =
+  val MinusNotANumber, OperandMustBeANumber, SumIncompatibleTypes,
+  IdentifierNotInScope, InvalidArgumentException, InvalidNumberOfArguments =
     Value
 
 }

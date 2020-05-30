@@ -1,8 +1,8 @@
 package slang.instructions.statements
 
-import slang.instructions.expressions.Expr
+import slang.instructions.expressions.Expression
 
-case class ExpressionStatement(expression: Expr) extends Statement {
+case class ExpressionStatement(expression: Expression) extends Statement {
   override def accept[R](visitor: StatementVisitor[R]): R =
     visitor.visitExpressionStmt(this)
   override def toString(nested: Int): String = {

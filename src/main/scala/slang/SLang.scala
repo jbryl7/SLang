@@ -1,5 +1,7 @@
 package slang
 
+import slang.instructions.customtypes.MyString
+import slang.instructions.expressions.LiteralExpression
 import slang.interpreter.Interpreter
 import slang.lexer.{FileHandler, Lexer, Token, TokenType}
 import slang.parser.Parser
@@ -17,6 +19,8 @@ object SLang extends App {
         val lexer = Lexer(fileHandler)
         val parser = Parser(lexer)
         val interpreter = Interpreter(parser)
+
+        interpreter.interpret()
 //        interpreter.interpret()
         fileHandler.source.close()
     }

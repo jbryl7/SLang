@@ -2,8 +2,10 @@ package slang.instructions.expressions
 
 import slang.lexer.Token
 
-case class SetExpr(val `object`: Expr, val name: Token, val value: Expr)
-    extends Expr {
+case class SetExpression(val `object`: Expression,
+                         val name: Token,
+                         val value: Expression)
+    extends Expression {
   override def accept[R](visitor: ExpressionVisitor[R]): R =
     visitor.visitSetExpr(this)
 

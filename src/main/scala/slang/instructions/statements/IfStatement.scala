@@ -1,8 +1,8 @@
 package slang.instructions.statements
 
-import slang.instructions.expressions.Expr
+import slang.instructions.expressions.Expression
 
-case class IfStatement(condition: Expr,
+case class IfStatement(condition: Expression,
                        thenBlock: Statement,
                        elseBlock: Statement)
     extends Statement {

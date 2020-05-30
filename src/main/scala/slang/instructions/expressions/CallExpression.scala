@@ -4,8 +4,10 @@ import slang.lexer.Token
 
 import scala.collection.mutable.ListBuffer
 
-case class CallExpr(callee: Expr, paren: Token, arguments: ListBuffer[Expr])
-    extends Expr {
+case class CallExpression(callee: Expression,
+                          paren: Token,
+                          arguments: ListBuffer[Expression])
+    extends Expression {
   override def accept[R](visitor: ExpressionVisitor[R]): R =
     visitor.visitCallExpr(this)
 

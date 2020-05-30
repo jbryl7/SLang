@@ -2,7 +2,10 @@ package slang.instructions.expressions
 
 import slang.lexer.Token
 
-case class BinaryExpr(left: Expr, operator: Token, right: Expr) extends Expr {
+case class BinaryExpression(left: Expression,
+                            operator: Token,
+                            right: Expression)
+    extends Expression {
   override def accept[R](visitor: ExpressionVisitor[R]): R =
     visitor.visitBinaryExpr(this)
 

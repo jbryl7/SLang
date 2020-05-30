@@ -1,9 +1,10 @@
 package slang.instructions.statements
 
-import slang.instructions.expressions.Expr
+import slang.instructions.expressions.Expression
 import slang.lexer.Token
 
-case class ReturnStatement(keyword: Token, value: Expr) extends Statement {
+case class ReturnStatement(keyword: Token, value: Expression)
+    extends Statement {
 
   override def accept[R](visitor: StatementVisitor[R]): R =
     visitor.visitReturnStmt(this)

@@ -100,6 +100,8 @@ case class Lexer(fileHandler: FileHandler) extends LexerInterface {
     ("print", Print),
     (EOF.toString(), Eof),
     ("||", Or),
+    ("true", True),
+    ("false", False),
     ("Int", IntegerType),
     ("String", StringType),
     ("Unit", UnitType),

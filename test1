@@ -1,4 +1,7 @@
 
+print(15 > 5)
+print(false)
+
 def foo(x: Int): Int = {
     return x
 }

@@ -1,8 +1,8 @@
 package slang.instructions.statements
-import slang.instructions.expressions.Expr
+import slang.instructions.expressions.Expression
 import slang.lexer.Token
 
-case class VarStatement(name: Token, initializer: Expr, varType: Token)
+case class VarStatement(name: Token, initializer: Expression, varType: Token)
     extends Statement {
 
   override def accept[R](visitor: StatementVisitor[R]): R =

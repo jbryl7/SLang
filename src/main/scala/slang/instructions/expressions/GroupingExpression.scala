@@ -1,11 +1,10 @@
 package slang.instructions.expressions
 
-case class LiteralExpr(var value: Any) extends Expr {
+case class GroupingExpression(val expression: Expression) extends Expression {
   override def accept[R](visitor: ExpressionVisitor[R]): R =
-    visitor.visitLiteralExpr(this)
-
+    visitor.visitGroupingExpr(this)
   override def toString(nested: Int): String = {
     val nest = getNest(nested)
-    f"\n${nest}LiteralExpression ${value.toString}"
+    f"\n${nest}GroupingExpression${expression.toString(nested + 1)}"
   }
 }

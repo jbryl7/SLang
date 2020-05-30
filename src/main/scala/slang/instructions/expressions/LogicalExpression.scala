@@ -2,8 +2,10 @@ package slang.instructions.expressions
 
 import slang.lexer.Token
 
-case class LogicalExpr(val left: Expr, val operator: Token, val right: Expr)
-    extends Expr {
+case class LogicalExpression(val left: Expression,
+                             val operator: Token,
+                             val right: Expression)
+    extends Expression {
   override def accept[R](visitor: ExpressionVisitor[R]): R =
     visitor.visitLogicalExpr(this)
 
