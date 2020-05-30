@@ -1,12 +1,11 @@
 package slang.instructions
 
+import slang.lexer.Token
 import slang.lexer.TokenType.TokenType
 
-case class Parameter(name: String, parameterType: TokenType) {
+case class Parameter(name: Token, parameterType: Token) extends Node {
   def toString(nested: Int): String = {
-    var nest = " "
-    for (x <- 0 to nested)
-      nest += "  "
+    val nest = getNest(nested)
     f"\n${nest}Param\n${nest} name: ${name} \n${nest} type ${parameterType}"
   }
 }

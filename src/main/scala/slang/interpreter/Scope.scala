@@ -1,17 +1,14 @@
 package slang.interpreter
 
-import slang.instructions.{
-  ClassDeclaration,
-  FunctionDeclaration,
-  VarDeclaration
-}
+import slang.instructions.Statements._
+import slang.instructions.Statements
 
 import scala.collection.mutable
 
-case class Scope(functions: mutable.Map[String, FunctionDeclaration] =
+case class Scope(functions: mutable.Map[String, FunctionStatement] =
                    mutable.Map(),
-                 classes: mutable.Map[String, ClassDeclaration] = mutable.Map(),
-                 vars: mutable.Map[String, VarDeclaration] = mutable.Map(),
+                 classes: mutable.Map[String, ClassStatement] = mutable.Map(),
+                 vars: mutable.Map[String, VarStatement] = mutable.Map(),
                  var parentScope: Option[Scope] = None) {
 
   def isInScope(identifier: String): Boolean =
@@ -28,36 +25,36 @@ case class Scope(functions: mutable.Map[String, FunctionDeclaration] =
     classes.keys.toList.contains(identifier) || parentScope.exists(
       _.isClassInScope(identifier))
 
-  def addFunction(f: FunctionDeclaration): Boolean = {
-    val notDeclaredYet = !isInScope(f.identifier)
-    functions(f.identifier) = f
+  def addFunction(f: FunctionStatement): Boolean = {
+    val notDeclaredYet = !isInScope(f.name.lexeme)
+    functions(f.name.lexeme) = f
     notDeclaredYet
   }
-  def addVariable(f: VarDeclaration): Boolean = {
-    val notDeclaredYet = !isInScope(f.getIdentifier)
-    vars(f.getIdentifier) = f
+  def addVariable(f: VarStatement): Boolean = {
+    val notDeclaredYet = !isInScope(f.name.lexeme)
+    vars(f.name.lexeme) = f
     notDeclaredYet
   }
-  def addClass(f: ClassDeclaration): Boolean = {
-    val notDeclaredYet = !isInScope(f.identifier)
-    classes(f.identifier) = f
+  def addClass(f: ClassStatement): Boolean = {
+    val notDeclaredYet = !isInScope(f.name.lexeme)
+    classes(f.name.lexeme) = f
     notDeclaredYet
   }
-  def getClassDeclaration(identifier: String): Option[ClassDeclaration] =
+  def getClassDeclaration(identifier: String): Option[ClassStatement] =
     classes.get(identifier) match {
       case Some(s) => Some(s)
       case None if parentScope.isDefined =>
         parentScope.get.getClassDeclaration(identifier)
       case _ => None
     }
-  def getVariableDeclaration(identifier: String): Option[VarDeclaration] =
+  def getVariableDeclaration(identifier: String): Option[VarStatement] =
     vars.get(identifier) match {
       case Some(s) => Some(s)
       case None if parentScope.isDefined =>
         parentScope.get.getVariableDeclaration(identifier)
       case _ => None
     }
-  def getFunctionDeclaration(identifier: String): Option[FunctionDeclaration] =
+  def getFunctionDeclaration(identifier: String): Option[FunctionStatement] =
     functions.get(identifier) match {
       case Some(s) => Some(s)
       case None if parentScope.isDefined =>
