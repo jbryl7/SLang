@@ -4,7 +4,7 @@ import org.scalatest.matchers.should.Matchers
 import org.scalatest.flatspec.AnyFlatSpec
 import slang.{EOF, lexer}
 import org.scalatest.matchers._
-import slang.instructions.{Block}
+import slang.instructions.statements.Block
 import slang.lexer.{FileHandler, Lexer, Token}
 import slang.utils.{LexerException, ParserException}
 

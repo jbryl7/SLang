@@ -7,4 +7,8 @@ trait Node {
       nest += "  "
     nest
   }
+  def toString(nested: Int): String = {
+    val nest = getNest(nested)
+    f"\n${nest} Node"
+  }
 }

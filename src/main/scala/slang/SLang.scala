@@ -1,7 +1,6 @@
 package slang
 
-//import slang.interpreter.Interpreter
-import slang.instructions.Expr._
+import slang.interpreter.Interpreter
 import slang.lexer.{FileHandler, Lexer, Token, TokenType}
 import slang.parser.Parser
 
@@ -17,9 +16,8 @@ object SLang extends App {
         val fileHandler = FileHandler(Some(arr.head))
         val lexer = Lexer(fileHandler)
         val parser = Parser(lexer)
-        val rootNode = parser.parse()
-        if (rootNode == null)
-          print("ERRRRRRRRRRRRRRRRRRROR")
+        val interpreter = Interpreter(parser)
+//        interpreter.interpret()
         fileHandler.source.close()
     }
   } catch {

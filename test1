@@ -4,7 +4,8 @@ def foo(x: Int): Int = {
 }
 var s: String = "\" hejka \"" // nizej invalid syntax
 class C {
-
+    def foo(x: Int): Unit =
+        println(x)
 }
 var x: Int = 5
 def foo(n: Int): Int = {

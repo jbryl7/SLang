@@ -1,8 +1,8 @@
 package slang.parser
 import slang.instructions._
-import slang.instructions.Expr._
-import slang.instructions._
-import slang.instructions.Statements._
+import slang.instructions.expressions._
+import slang.instructions.statements._
+import slang.instructions.expressions.MyString
 import slang.lexer.TokenType.TokenType
 import slang.lexer._
 import slang.utils._
@@ -12,14 +12,14 @@ import scala.collection.mutable.ListBuffer
 
 case class Parser(lexer: LexerInterface) {
   var maybeToken: Option[Token] = None
-  var parsedStatement: Statements = null
+  var parsedStatement: Statement = null
   var currentToken: Token = _
 
   def parse(): Block = {
     maybeToken = lexer.getNextToken
     currentToken = maybeToken.get
     parsedStatement = parseStatement()
-    val instructions: ListBuffer[Statements] = ListBuffer()
+    val instructions: ListBuffer[Statement] = ListBuffer()
     breakable {
       while (parsedStatement != null) {
         instructions.append(parsedStatement)
@@ -31,7 +31,7 @@ case class Parser(lexer: LexerInterface) {
     Block(instructions)
   }
 
-  def parseStatement(): Statements = {
+  def parseStatement(): Statement = {
     currentToken.tokenType match {
       case TokenType.Print      => parsePrint()
       case TokenType.Return     => parseReturn()
@@ -48,7 +48,7 @@ case class Parser(lexer: LexerInterface) {
     }
   }
 
-  def parseClassDeclaration(): Statements = {
+  def parseClassDeclaration(): Statement = {
     accept(TokenType.Class)
     val identifier = currentToken
     accept(TokenType.Identifier)
@@ -92,7 +92,7 @@ case class Parser(lexer: LexerInterface) {
     FunctionStatement(identifier, returnType, parameters, body)
   }
   def parseBlock(): Block = {
-    val instructions: ListBuffer[Statements] = ListBuffer()
+    val instructions: ListBuffer[Statement] = ListBuffer()
     if (currentToken.tokenType == TokenType.LeftBrace) {
       accept(TokenType.LeftBrace)
       while (currentToken.tokenType != TokenType.RightBrace) {
@@ -122,7 +122,7 @@ case class Parser(lexer: LexerInterface) {
     params
   }
 
-  def parseReturn(): Statements = {
+  def parseReturn(): Statement = {
     val tok = currentToken
     accept(TokenType.Return)
     var expr: Expr = null
@@ -131,7 +131,7 @@ case class Parser(lexer: LexerInterface) {
     ReturnStatement(tok, expr)
   }
 
-  def parseIf(): Statements = {
+  def parseIf(): Statement = {
     accept(TokenType.If)
     accept(TokenType.LeftParenthesis)
     val condition = parseExpression()
@@ -180,7 +180,7 @@ case class Parser(lexer: LexerInterface) {
     VarStatement(identifier, expression, varType)
   }
 
-  def parsePrint(): Statements = {
+  def parsePrint(): Statement = {
     accept(TokenType.Print)
     accept(TokenType.LeftParenthesis)
     val expressionToPrint = parseExpression()
@@ -198,10 +198,10 @@ case class Parser(lexer: LexerInterface) {
       accept(TokenType.Assign)
       val value = assignment
       expr match {
-        case e: Expr.VariableExpr =>
-          expr = Expr.AssignExpr(e.name, value)
-        case e: Expr.GetExpr =>
-          expr = Expr.SetExpr(e.`object`, e.name, value)
+        case e: VariableExpr =>
+          expr = AssignExpr(e.name, value)
+        case e: GetExpr =>
+          expr = SetExpr(e.`object`, e.name, value)
       }
     }
     expr
@@ -214,7 +214,7 @@ case class Parser(lexer: LexerInterface) {
       accept(currentToken.tokenType)
       val right = and
 
-      expr = Expr.LogicalExpr(expr, operator, right)
+      expr = LogicalExpr(expr, operator, right)
     }
     expr
   }
@@ -225,7 +225,7 @@ case class Parser(lexer: LexerInterface) {
       val operator = currentToken
       accept(currentToken.tokenType)
       val right = equality
-      expr = Expr.LogicalExpr(expr, operator, right)
+      expr = LogicalExpr(expr, operator, right)
     }
     expr
   }
@@ -236,7 +236,7 @@ case class Parser(lexer: LexerInterface) {
       val operator = currentToken
       accept(currentToken.tokenType)
       val right = comparison
-      expr = Expr.BinaryExpr(expr, operator, right)
+      expr = BinaryExpr(expr, operator, right)
     }
     expr
   }
@@ -253,7 +253,7 @@ case class Parser(lexer: LexerInterface) {
       val operator = currentToken
       accept(currentToken.tokenType)
       val right = addition
-      expr = Expr.BinaryExpr(expr, operator, right)
+      expr = BinaryExpr(expr, operator, right)
     }
     expr
   }
@@ -264,7 +264,7 @@ case class Parser(lexer: LexerInterface) {
       val operator = currentToken
       accept(currentToken.tokenType)
       val right = multiplication
-      expr = Expr.BinaryExpr(expr, operator, right)
+      expr = BinaryExpr(expr, operator, right)
     }
     expr
   }
@@ -275,7 +275,7 @@ case class Parser(lexer: LexerInterface) {
       val operator = currentToken
       accept(currentToken.tokenType)
       val right = unary
-      expr = Expr.BinaryExpr(expr, operator, right)
+      expr = BinaryExpr(expr, operator, right)
     }
     expr
   }
@@ -287,12 +287,9 @@ case class Parser(lexer: LexerInterface) {
       val operator = currentToken
       accept(currentToken.tokenType)
       val right = unary
-      Expr.UnaryExpr(operator, right)
+      UnaryExpr(operator, right)
 
     } else call
-
-  import slang.instructions.Expr
-  import java.util
 
   private def finishCall(callee: Expr): Expr = {
     def acceptIfComma(): Boolean = {
@@ -309,7 +306,7 @@ case class Parser(lexer: LexerInterface) {
 
     val paren = currentToken
     accept(TokenType.RightParenthesis)
-    Expr.CallExpr(callee, paren, arguments)
+    CallExpr(callee, paren, arguments)
   }
 
   private def call(): Expr = {
@@ -323,7 +320,7 @@ case class Parser(lexer: LexerInterface) {
 
           val name = currentToken
           accept(TokenType.Identifier)
-          expr = Expr.GetExpr(expr, name)
+          expr = GetExpr(expr, name)
         } else break
       }
     }
@@ -333,13 +330,13 @@ case class Parser(lexer: LexerInterface) {
 
   private def primary: Expr = {
     currentToken.tokenType match {
-//      case TokenType.False =>
-//        accept(TokenType.False)
-//        LiteralExpr(false.asInstanceOf[Boolean])
+      case TokenType.False =>
+        accept(TokenType.False)
+        LiteralExpr(false)
 
-//      case TokenType.True =>
-//        accept(TokenType.True)
-//        LiteralExpr(true.asInstanceOf[Boolean])
+      case TokenType.True =>
+        accept(TokenType.True)
+        LiteralExpr(true)
 
       case TokenType.IntegerLiteral =>
         val ret = LiteralExpr(currentToken.lexeme.toInt)
@@ -350,23 +347,23 @@ case class Parser(lexer: LexerInterface) {
         accept(TokenType.StringLiteral)
         ret
       case TokenType.This =>
-        val ret = Expr.ThisExpr(currentToken)
+        val ret = ThisExpr(currentToken)
         accept(TokenType.This)
         ret
       case TokenType.Identifier =>
-        val ret = Expr.VariableExpr(currentToken)
+        val ret = VariableExpr(currentToken)
         accept(TokenType.Identifier)
         ret
       case TokenType.LeftParenthesis =>
         accept(TokenType.LeftParenthesis)
         val expr = parseExpression()
         accept(TokenType.RightParenthesis)
-        Expr.GroupingExpr(expr)
+        GroupingExpr(expr)
       case _ =>
         ExceptionHandler.reportException(
           ParserException(ParserExceptionType.InvalidExpression),
           Some(currentToken.toString))
-        Expr.LiteralExpr(0)
+        LiteralExpr(0)
     }
   }
 
