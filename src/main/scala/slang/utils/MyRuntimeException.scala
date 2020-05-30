@@ -25,7 +25,8 @@ case class MyRuntimeException(exceptionType: MyRuntimeExceptionType)
 case object MyRuntimeExceptionType extends Enumeration {
   type MyRuntimeExceptionType = Value
   val MinusNotANumber, OperandMustBeANumber, SumIncompatibleTypes,
-  IdentifierNotInScope, InvalidArgumentException, InvalidNumberOfArguments =
+  IdentifierNotInScope, AlreadyDeclared, InvalidArgumentException,
+  UndefinedVariable, InvalidNumberOfArguments =
     Value
 
 }

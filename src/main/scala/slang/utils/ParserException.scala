@@ -19,7 +19,9 @@ case class ParserException(exceptionType: ParserExceptionType)
     case ParserExceptionType.ReturnOutsideOfFunction =>
       "Tried to return outside of function."
     case ParserExceptionType.UnexpectedToken =>
-      "Tried to return outside of function."
+      "Unexpected token."
+    case ParserExceptionType.DeclarationInOneLineBody =>
+      "Declaration in body one liner."
   }
   override def toString: String = message
 }
@@ -28,6 +30,6 @@ case object ParserExceptionType extends Enumeration {
   type ParserExceptionType = Value
   val InvalidExpression, UnexpectedEOF, DotWithoutIdentifier,
   InvalidExpressionInClassDeclaration, IdentifierAlreadyInScope,
-  ReturnOutsideOfFunction, UnexpectedToken = Value
+  ReturnOutsideOfFunction, DeclarationInOneLineBody, UnexpectedToken = Value
 
 }

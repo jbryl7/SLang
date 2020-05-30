@@ -12,8 +12,8 @@ import slang.utils.{
 case class Interpreter(parser: Parser)
     extends ExpressionVisitor[Any]
     with StatementVisitor[Unit] {
-  var currentScope = Scope()
 
+  var currentScope = Scope()
   def interpret() = {
     val rootBlock = parser.parse()
     rootBlock.statements.foreach(execute)
@@ -26,7 +26,9 @@ case class Interpreter(parser: Parser)
       case e => println(e)
     }
 
-  override def visitBlockStmt(stmt: Block) = ???
+  override def visitBlockStmt(stmt: Block) = {
+    stmt.statements.foreach(_.accept(this))
+  }
 
   override def visitClassStmt(stmt: ClassStatement) = ???
 
@@ -47,11 +49,19 @@ case class Interpreter(parser: Parser)
 
   override def visitReturnStmt(stmt: ReturnStatement) = ???
 
-  override def visitVarStmt(stmt: VarStatement) = ???
+  override def visitVarStmt(stmt: VarStatement) = {
+    var value: Any = null
+    if (stmt.initializer != null)
+      value = evaluate(stmt.initializer)
+    //add typeChecks
+    currentScope.defineVariable(stmt.name, value)
+  }
 
   override def visitSetExpr(set: SetExpression) = ???
 
-  override def visitAssignExpr(expr: AssignExpression) = {}
+  override def visitAssignExpr(expr: AssignExpression) = {
+    if (currentScope.isInScope(expr.name.lexeme)) {}
+  }
 
   override def visitBinaryExpr(expr: BinaryExpression) = {
     def reportOperandMustBeANumber(operator: Token): Any =
@@ -72,8 +82,14 @@ case class Interpreter(parser: Parser)
       case TokenType.Minus => left.asInstanceOf[Int] - right.asInstanceOf[Int]
       case TokenType.Plus =>
         (left, right) match {
-          case (l: String, r: String) => l + r
-          case (l: Int, r: Int)       => l + r
+          case (l: Int, r: Int) => l + r
+          case (l: String, r) =>
+            try { l + r.toString } catch {
+              case e =>
+                ExceptionHandler.reportException(
+                  MyRuntimeException(
+                    MyRuntimeExceptionType.SumIncompatibleTypes))
+            }
           case _ =>
             ExceptionHandler.reportException(
               MyRuntimeException(MyRuntimeExceptionType.SumIncompatibleTypes))
@@ -128,20 +144,26 @@ case class Interpreter(parser: Parser)
   override def visitLiteralExpr(expr: LiteralExpression) =
     expr.value
 
-  override def visitLogicalExpr(expr: LogicalExpression) = ???
+  override def visitLogicalExpr(expr: LogicalExpression) = {
+    val l = evaluate(expr.left)
+    expr.operator.tokenType match {
+      case TokenType.And =>
+        isTrue(l) && isTrue(evaluate(expr.right))
+      case TokenType.Or =>
+        isTrue(l) || isTrue(evaluate(expr.right))
+    }
+  }
 
   override def visitThisExpr(expr: ThisExpression) = ???
-
+  def isTrue(r: Any): Boolean =
+    r match {
+      case r: Boolean => r
+      case ""         => false
+      case 0          => false
+      case null       => false
+      case _          => true
+    }
   override def visitUnaryExpr(expr: UnaryExpression): Any = {
-    def isTrue(r: Any): Boolean =
-      r match {
-        case r: Boolean => r
-        case ""         => false
-        case 0          => false
-        case null       => false
-        case _          => true
-      }
-
     val right = evaluate(expr.right)
     try {
       expr.operator.tokenType match {
@@ -160,5 +182,6 @@ case class Interpreter(parser: Parser)
     }
   }
 
-  override def visitVariableExpr(expr: VariableExpression) = ???
+  override def visitVariableExpr(expr: VariableExpression) =
+    currentScope.getVariable(expr.name)
 }

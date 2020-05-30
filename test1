@@ -1,11 +1,15 @@
 
-print(15 > 5)
-print(false)
+var s: String = "\" hejka \"" // nizej invalid syntax
+var x: Int = 5
+
+x = s
+print("2xd" + 5 + (5 > (2 * 3)) + "heh")
+
+print(x)
 
 def foo(x: Int): Int = {
     return x
 }
-var s: String = "\" hejka \"" // nizej invalid syntax
 class C {
     def foo(x: Int): Unit =
         println(x)

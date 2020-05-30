@@ -105,6 +105,14 @@ case class Parser(lexer: LexerInterface) {
     } else
       instructions.append(parseStatement())
 
+    if (instructions.length == 1 && (instructions(0)
+          .isInstanceOf[VarStatement] || instructions(0)
+          .isInstanceOf[ClassStatement] || instructions(0)
+          .isInstanceOf[FunctionStatement]))
+      ExceptionHandler.reportException(
+        ParserException(ParserExceptionType.DeclarationInOneLineBody),
+        Some(instructions(0).toString))
+
     Block(instructions)
   }
 
