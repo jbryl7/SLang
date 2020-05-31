@@ -1,41 +1,40 @@
 package slang.parser
-
-import slang.instructions._
+import slang.instructions.expressions._
+import slang.instructions.statements._
+import slang.interpreter.runtimeclasses.MyNil
 import slang.lexer.TokenType.TokenType
 import slang.lexer._
 import slang.utils._
+
 import util.control.Breaks._
 import scala.collection.mutable.ListBuffer
 
 case class Parser(lexer: LexerInterface) {
   var maybeToken: Option[Token] = None
-  var maybeParsedStatement: Option[Node] = None
+  var parsedStatement: Statement = null
   var currentToken: Token = _
-  val program: Program = Program("defaultName")
 
-  def parse(): Program = {
+  def parse(): Block = {
     maybeToken = lexer.getNextToken
     currentToken = maybeToken.get
-    maybeParsedStatement = parseStatement()
-
+    parsedStatement = parseStatement()
+    val instructions: ListBuffer[Statement] = ListBuffer()
     breakable {
-      while (maybeParsedStatement.isDefined) {
-        program.addStatement(maybeParsedStatement.get)
-        println(currentToken)
+      while (parsedStatement != null) {
+        instructions.append(parsedStatement)
         if (currentToken.tokenType == TokenType.Eof)
           break
-        maybeParsedStatement = parseStatement()
+        parsedStatement = parseStatement()
       }
     }
-
-    program
+    Block(instructions)
   }
 
-  def parseStatement(): Option[Node] = {
+  def parseStatement(): Statement = {
     currentToken.tokenType match {
       case TokenType.Print      => parsePrint()
       case TokenType.Return     => parseReturn()
-      case TokenType.Identifier => parseCall()
+      case TokenType.Identifier => ExpressionStatement(parseAssignment)
       case TokenType.Var        => parseVarDeclaration()
       case TokenType.Fun        => parseFunctionDeclaration()
       case TokenType.Class      => parseClassDeclaration()
@@ -44,29 +43,31 @@ case class Parser(lexer: LexerInterface) {
         ExceptionHandler.reportException(
           ParserException(ParserExceptionType.UnexpectedToken),
           Some(currentToken.toString))
-        None
+        null
     }
   }
 
-  def parseClassDeclaration(): Option[Node] = {
+  def parseClassDeclaration(): Statement = {
     accept(TokenType.Class)
-    val identifier = currentToken.lexeme
+    val identifier = currentToken
     accept(TokenType.Identifier)
+    accept(TokenType.LeftParenthesis)
+    val params = parseParameters()
+    accept(TokenType.RightParenthesis)
+
     val classBody = parseClassBody()
 
-    Some(ClassDeclaration(identifier, classBody))
+    ClassStatement(identifier, classBody, params)
   }
   def parseClassBody(): ClassBody = {
-    val varDeclarations: ListBuffer[VarDeclaration] = ListBuffer()
-    val funDeclarations: ListBuffer[FunctionDeclaration] = ListBuffer()
+    val funDeclarations: ListBuffer[FunctionStatement] = ListBuffer()
 
     accept(TokenType.LeftBrace)
 
     while (currentToken.tokenType != TokenType.RightBrace) {
       currentToken.tokenType match {
-        case TokenType.Var => varDeclarations.append(parseVarDeclaration().get)
         case TokenType.Fun =>
-          funDeclarations.append(parseFunctionDeclaration().get)
+          funDeclarations.append(parseFunctionDeclaration())
         case _ =>
           ExceptionHandler.reportException(
             ParserException(
@@ -76,11 +77,11 @@ case class Parser(lexer: LexerInterface) {
     }
     accept(TokenType.RightBrace)
 
-    ClassBody(varDeclarations, funDeclarations)
+    ClassBody(funDeclarations)
   }
-  def parseFunctionDeclaration(): Option[FunctionDeclaration] = {
+  def parseFunctionDeclaration(): FunctionStatement = {
     accept(TokenType.Fun)
-    val identifier = currentToken.lexeme
+    val identifier = currentToken
     accept(TokenType.Identifier)
     accept(TokenType.LeftParenthesis)
     val parameters = parseParameters()
@@ -89,21 +90,29 @@ case class Parser(lexer: LexerInterface) {
     val returnType = parseType()
     accept(TokenType.Assign)
     val body = parseBlock()
-    Some(FunctionDeclaration(identifier, returnType, parameters, body))
+    FunctionStatement(identifier, returnType, parameters, body)
   }
   def parseBlock(): Block = {
-    val instructions: ListBuffer[Node] = ListBuffer()
+    val instructions: ListBuffer[Statement] = ListBuffer()
     if (currentToken.tokenType == TokenType.LeftBrace) {
       accept(TokenType.LeftBrace)
       while (currentToken.tokenType != TokenType.RightBrace) {
         if (currentToken.tokenType == TokenType.LeftBrace)
           instructions.append(parseBlock())
         else
-          instructions.append(parseStatement().get)
+          instructions.append(parseStatement())
       }
       accept(TokenType.RightBrace)
     } else
-      instructions.append(parseStatement().get)
+      instructions.append(parseStatement())
+
+    if (instructions.length == 1 && (instructions(0)
+          .isInstanceOf[VarStatement] || instructions(0)
+          .isInstanceOf[ClassStatement] || instructions(0)
+          .isInstanceOf[FunctionStatement]))
+      ExceptionHandler.reportException(
+        ParserException(ParserExceptionType.DeclarationInOneLineBody),
+        Some(instructions(0).toString))
 
     Block(instructions)
   }
@@ -111,7 +120,7 @@ case class Parser(lexer: LexerInterface) {
   def parseParameters(): ListBuffer[Parameter] = {
     val params: ListBuffer[Parameter] = ListBuffer()
     while (currentToken.tokenType != TokenType.RightParenthesis) {
-      val identifier = currentToken.lexeme
+      val identifier = currentToken
       accept(TokenType.Identifier)
       accept(TokenType.Colon)
       val paramType = parseType()
@@ -122,245 +131,244 @@ case class Parser(lexer: LexerInterface) {
     params
   }
 
-  def parseCall(): Option[Node] = {
-    val identifier = currentToken.lexeme
-    accept(TokenType.Identifier)
-    currentToken.tokenType match {
-      case TokenType.LeftParenthesis =>
-        accept(TokenType.LeftParenthesis)
-        val arguments = parseArguments()
-        accept(TokenType.RightParenthesis)
-        Some(FunctionCall(identifier, arguments))
-      case TokenType.Dot =>
-        accept(TokenType.Dot)
-        val call = parseCall()
-        Some(ObjectCall(identifier, call))
-      case TokenType.Assign => parseAssignment(identifier)
-      case _ =>
-        Some(VariableCall(identifier))
-    }
-  }
-
-  def parseAssignment(identifier: String) = {
-    accept(TokenType.Assign)
-    val expression = parseExpression()
-    Some(VariableAssignment(VariableCall(identifier), expression))
-  }
-
-  def parseReturn(): Option[Node] = {
+  def parseReturn(): Statement = {
+    val tok = currentToken
     accept(TokenType.Return)
-    Some(Return(parseExpression()))
+    var expr: Expression = null
+    if (currentToken.position.row == tok.position.row && currentToken.tokenType != TokenType.RightBrace)
+      expr = parseExpression()
+    ReturnStatement(tok, expr)
   }
 
-  def parseIf(): Option[Node] = {
+  def parseIf(): Statement = {
     accept(TokenType.If)
     accept(TokenType.LeftParenthesis)
-    val condition = parseCondition()
+    val condition = parseExpression()
     accept(TokenType.RightParenthesis)
     val ifBlock = parseBlock()
-    val elseBlock: Option[Block] =
+    val elseBlock: Block =
       if (currentToken.tokenType == TokenType.Else) {
         accept(TokenType.Else)
-        Some(parseBlock())
-      } else
-        None
-
-    Some(IfElse(condition, ifBlock, elseBlock))
+        parseBlock()
+      } else null
+    IfStatement(condition, ifBlock, elseBlock)
   }
 
-  def parseArguments(): ListBuffer[Node] = {
-    val arguments: ListBuffer[Node] = ListBuffer();
-    while (currentToken.tokenType != TokenType.RightParenthesis) {
-      val argPossibleTypes = List(TokenType.IntegerLiteral,
-                                  TokenType.StringLiteral,
-                                  TokenType.Identifier,
-                                  TokenType.Minus,
-                                  TokenType.LeftParenthesis)
-
-      currentToken.tokenType match {
-        case t if argPossibleTypes.contains(t) =>
-          arguments.append(parseExpression())
-        case _ =>
-          ExceptionHandler.reportException(
-            ParserException(ParserExceptionType.InvalidExpression),
-            Some(
-              f"${currentToken.position} Expected one of ${argPossibleTypes}. Provided ${currentToken.tokenType}")
-          )
-      }
-      if (currentToken.tokenType == TokenType.Comma)
-        accept(TokenType.Comma)
-    }
-    arguments
-  }
-
-  def parseVarDeclaration(): Option[VarDeclaration] = {
+  def parseVarDeclaration(): VarStatement = {
     accept(TokenType.Var)
-    val identifier = currentToken.lexeme
+    val identifier = currentToken
     accept(TokenType.Identifier)
     accept(TokenType.Colon)
     val varType = parseType()
     accept(TokenType.Assign)
     val expression = parseExpression()
-    Some(new VarDeclaration(identifier, Some(expression), varType))
+    VarStatement(identifier, expression, varType)
   }
 
-  def parsePrint(): Option[Node] = {
+  def parsePrint(): Statement = {
     accept(TokenType.Print)
     accept(TokenType.LeftParenthesis)
     val expressionToPrint = parseExpression()
     accept(TokenType.RightParenthesis)
-    Some(PrintCall(expressionToPrint))
+    PrintStatement(expressionToPrint)
   }
-  def parseExpression(): Node = {
+  def parseExpression(): Expression = {
+    parseAssignment
+  }
 
-    val operands: ListBuffer[Node] = ListBuffer()
-    val operators: ListBuffer[TokenType] = ListBuffer()
-
-    if (TokenType.LeftBrace == currentToken.tokenType) // var x: Int = {x}
-      ExceptionHandler.reportException(
-        ParserException(ParserExceptionType.InvalidExpression),
-        Some(s"${currentToken.position} found ${currentToken.lexeme}"))
-
-    operands.append(parseMultiplicativeExpression())
-    currentToken.tokenType match {
-      case TokenType.Plus | TokenType.Minus =>
-        operators.append(currentToken.tokenType)
-        accept(currentToken.tokenType)
-        operands.append(parseMultiplicativeExpression())
-      case _ => ()
+  private def parseAssignment: Expression = {
+    var expr: Expression = parseOr
+    if (currentToken.tokenType == TokenType.Assign) {
+      print("entered")
+      accept(TokenType.Assign)
+      val value = parseAssignment
+      expr match {
+        case e: VariableExpression =>
+          expr = AssignExpression(e.name, value)
+        case e: GetExpression =>
+          expr = SetExpression(e.obj, e.name, value)
+      }
     }
-    new Expression(operands, operators)
+    expr
   }
 
-  def parseMultiplicativeExpression(): Node = {
+  private def parseOr = {
+    var expr = parseAnd
+    while ({ currentToken.tokenType == TokenType.Or }) {
+      val operator = currentToken
+      accept(currentToken.tokenType)
+      val right = parseAnd
 
-    val operands: ListBuffer[Node] = ListBuffer()
-    val operators: ListBuffer[TokenType] = ListBuffer()
-    operands.append(parsePrimaryExpression())
-    while (List(TokenType.MultiplicativeOperator, TokenType.DivideOperator)
-             .contains(currentToken.tokenType)) {
-      operators.append(currentToken.tokenType)
-      accept(List(TokenType.MultiplicativeOperator, TokenType.DivideOperator))
-      operands.append(parsePrimaryExpression())
+      expr = LogicalExpression(expr, operator, right)
     }
-    new Expression(operands, operators)
+    expr
   }
 
-  def parsePrimaryExpression(): Node = {
-    val operands: ListBuffer[Node] = ListBuffer()
-    val operators: ListBuffer[TokenType] = ListBuffer()
+  private def parseAnd = {
+    var expr = parseEquality
+    while (currentToken.tokenType == TokenType.And) {
+      val operator = currentToken
+      accept(currentToken.tokenType)
+      val right = parseEquality
+      expr = LogicalExpression(expr, operator, right)
+    }
+    expr
+  }
+
+  private def parseEquality = {
+    var expr = parseComparison
+    while (currentToken.tokenType == TokenType.BangEqual || currentToken.tokenType == TokenType.Equal) {
+      val operator = currentToken
+      accept(currentToken.tokenType)
+      val right = parseComparison
+      expr = BinaryExpression(expr, operator, right)
+    }
+    expr
+  }
+
+  private def parseComparison = {
+    var expr = parseAddition
+    val comparisonOperators = List(TokenType.Greater,
+                                   TokenType.GreaterEqual,
+                                   TokenType.Less,
+                                   TokenType.LessEqual)
+    while ({
+      comparisonOperators.contains(currentToken.tokenType)
+    }) {
+      val operator = currentToken
+      accept(currentToken.tokenType)
+      val right = parseAddition
+      expr = BinaryExpression(expr, operator, right)
+    }
+    expr
+  }
+
+  private def parseAddition = {
+    var expr = parseMultiplication
+    while (currentToken.tokenType == TokenType.Plus || currentToken.tokenType == TokenType.Minus) {
+      val operator = currentToken
+      accept(currentToken.tokenType)
+      val right = parseMultiplication
+      expr = BinaryExpression(expr, operator, right)
+    }
+    expr
+  }
+
+  private def parseMultiplication = {
+    var expr = parseUnary
+    while (currentToken.tokenType == TokenType.MultiplicativeOperator || currentToken.tokenType == TokenType.DivideOperator) {
+      val operator = currentToken
+      accept(currentToken.tokenType)
+      val right = parseUnary
+      expr = BinaryExpression(expr, operator, right)
+    }
+    expr
+  }
+
+  //< addition-and-multiplication
+  //> unary
+  private def parseUnary: Expression =
+    if (currentToken.tokenType == TokenType.Minus || currentToken.tokenType == TokenType.Bang) {
+      val operator = currentToken
+      accept(currentToken.tokenType)
+      val right = parseUnary
+      UnaryExpression(operator, right)
+
+    } else parseCall
+
+  private def finishCall(callee: Expression): Expression = {
+
+    accept(TokenType.LeftParenthesis)
+
+    val paren = currentToken
+    val arguments = parseArguments()
+    accept(TokenType.RightParenthesis)
+    CallExpression(callee, paren, arguments)
+  }
+
+  def parseArguments(): ListBuffer[Expression] = {
+    def acceptIfComma: Boolean = {
+      val ret = currentToken.tokenType == TokenType.Comma
+      if (ret)
+        accept(TokenType.Comma)
+      ret
+    }
+
+    val arguments: ListBuffer[Expression] = ListBuffer()
+    if (currentToken.tokenType != TokenType.RightParenthesis)
+      do arguments.append(parseExpression()) while (acceptIfComma)
+    arguments
+  }
+
+  private def parseCall(): Expression = {
+    var expr = parsePrimaryExpression
+    breakable {
+      while (true) {
+        if (currentToken.tokenType == TokenType.LeftParenthesis)
+          expr = finishCall(expr)
+        else if (currentToken.tokenType == TokenType.Dot) {
+          accept(TokenType.Dot)
+
+          val name = currentToken
+          accept(TokenType.Identifier)
+          expr = GetExpression(expr, name)
+        } else break
+      }
+    }
+
+    expr
+  }
+
+  private def parsePrimaryExpression: Expression = {
     currentToken.tokenType match {
+      case TokenType.False =>
+        accept(TokenType.False)
+        LiteralExpression(false)
+
+      case TokenType.True =>
+        accept(TokenType.True)
+        LiteralExpression(true)
+      case TokenType.Nil =>
+        accept(TokenType.Nil)
+        LiteralExpression(MyNil)
+
+      case TokenType.IntegerLiteral =>
+        val ret = LiteralExpression(currentToken.lexeme.toInt)
+        accept(TokenType.IntegerLiteral)
+        ret
+      case TokenType.StringLiteral =>
+        val ret = LiteralExpression(currentToken.lexeme)
+        accept(TokenType.StringLiteral)
+        ret
+      case TokenType.This =>
+        val ret = ThisExpression(currentToken)
+        accept(TokenType.This)
+        ret
+      case TokenType.Identifier =>
+        val ret = VariableExpression(currentToken)
+        accept(TokenType.Identifier)
+        ret
       case TokenType.LeftParenthesis =>
         accept(TokenType.LeftParenthesis)
-        operands.append(parseExpression())
+        val expr = parseExpression()
         accept(TokenType.RightParenthesis)
-      case TokenType.Identifier => operands.append(parseCall().get)
-      case _                    => operands.append(parseLiteral())
-    }
-    new Expression(operands, operators)
-  }
-
-  def parseCondition(): Condition = {
-    val operands: ListBuffer[Node] = ListBuffer()
-    val operators: ListBuffer[TokenType] = ListBuffer()
-    operands.append(parseAndCondition())
-    while (currentToken.tokenType == TokenType.Or) {
-      accept(TokenType.Or)
-      operators.append(TokenType.Or)
-      operands.append(parseAndCondition())
-    }
-    Condition(operands, operators)
-  }
-  def parseAndCondition(): Condition = {
-    val operands: ListBuffer[Node] = ListBuffer()
-    val operators: ListBuffer[TokenType] = ListBuffer()
-    operands.append(parseEqualityCondition())
-    while (currentToken.tokenType == TokenType.And) {
-      accept(TokenType.And)
-      operators.append(TokenType.And)
-      operands.append(parseEqualityCondition())
-    }
-    Condition(operands, operators)
-  }
-  def parseEqualityCondition(): Condition = {
-    val operands: ListBuffer[Node] = ListBuffer()
-    val operators: ListBuffer[TokenType] = ListBuffer()
-    operands.append(parseRelationalCondition())
-    val equalityOperators = List(TokenType.Equal, TokenType.BangEqual)
-    while (equalityOperators.contains(currentToken.tokenType)) {
-      val tokenType = currentToken.tokenType
-      accept(equalityOperators)
-      operands.append(parseRelationalCondition())
-      operators.append(tokenType)
-    }
-    Condition(operands, operators)
-  }
-
-  def parseRelationalCondition(): Condition = {
-    val operands: ListBuffer[Node] = ListBuffer()
-    val operators: ListBuffer[TokenType] = ListBuffer()
-    operands.append(parsePrimaryCondition())
-    val relationalOperators = List(TokenType.Less,
-                                   TokenType.LessEqual,
-                                   TokenType.Greater,
-                                   TokenType.GreaterEqual)
-    while (relationalOperators.contains(currentToken.tokenType)) {
-      val tokenType = currentToken.tokenType
-      accept(relationalOperators)
-      operands.append(parsePrimaryCondition())
-      operators.append(tokenType)
-    }
-    Condition(operands, operators)
-  }
-
-  def parsePrimaryCondition(): Condition = {
-    val operands: ListBuffer[Node] = ListBuffer()
-    val operators: ListBuffer[TokenType] = ListBuffer()
-    if (currentToken.tokenType == TokenType.LeftParenthesis) {
-      accept(TokenType.LeftParenthesis)
-      operands.append(parseCondition())
-      accept(TokenType.RightParenthesis)
-    } else
-      operands.append(parseExpression())
-
-    Condition(operands, operators)
-  }
-
-  def parseNumber(sign: Int = 1): MyInt = {
-    currentToken.tokenType match {
-      case TokenType.IntegerLiteral =>
-        val myInt = MyInt(currentToken.lexeme.toInt * sign)
-        accept(TokenType.IntegerLiteral)
-        myInt
-      case _ => println("something impossible happened"); MyInt()
+        GroupingExpression(expr)
+      case _ =>
+        ExceptionHandler.reportException(
+          ParserException(ParserExceptionType.InvalidExpression),
+          Some(currentToken.toString))
+        LiteralExpression(0)
     }
   }
 
-  def parseType(): TokenType = {
-    val currentType = currentToken.tokenType
+  def parseType(): Token = { //todo
+    val currentType = currentToken
     accept(
       List(TokenType.UnitType,
            TokenType.IntegerType,
            TokenType.StringType,
            TokenType.Identifier))
     currentType
-  }
-  def parseLiteral(): Node = {
-    currentToken.tokenType match {
-      case TokenType.Minus =>
-        accept(TokenType.Minus)
-        parseNumber(-1)
-      case TokenType.Plus =>
-        accept(TokenType.Plus)
-        parseNumber()
-      case TokenType.IntegerLiteral =>
-        parseNumber()
-      case TokenType.StringLiteral =>
-        val ret = MyString(currentToken.lexeme)
-        accept(TokenType.StringLiteral)
-        ret
-      case _ => println("something impossible happened"); MyString()
-    }
   }
   def accept(tokenType: TokenType): Boolean = accept(List(tokenType))
 

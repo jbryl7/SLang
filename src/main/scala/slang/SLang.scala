@@ -1,9 +1,8 @@
 package slang
 
-import slang.lexer.{FileHandler, Lexer, Token, TokenType}
+import slang.interpreter.Interpreter
+import slang.lexer._
 import slang.parser.Parser
-
-import scala.io.Source
 
 object SLang extends App {
   try {
@@ -15,8 +14,8 @@ object SLang extends App {
         val fileHandler = FileHandler(Some(arr.head))
         val lexer = Lexer(fileHandler)
         val parser = Parser(lexer)
-        val program = parser.parse()
-        println(program)
+        val interpreter = Interpreter(parser)
+        interpreter.interpret()
         fileHandler.source.close()
     }
   } catch {

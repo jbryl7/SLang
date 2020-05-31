@@ -6,8 +6,18 @@ import slang.EOF
 
 case class Token(tokenType: TokenType,
                  lexeme: String,
-                 position: CurrentPosition)
-
+                 position: CurrentPosition) {
+  def getNest(nested: Int): String = {
+    var nest = ""
+    for (x <- 0 to nested)
+      nest += "  "
+    nest
+  }
+  def toString(nested: Int): String = {
+    val nest = getNest(nested)
+    f"\n${nest}Token\n${nest} type: ${tokenType}\n${nest} lexeme: ${lexeme}\n${nest} pos: ${position}"
+  }
+}
 object TokenType extends Enumeration {
   type TokenType = Value
 
@@ -16,7 +26,7 @@ object TokenType extends Enumeration {
   BangEqual, Equal, Assign, Greater, GreaterEqual, Less, LessEqual, Id,
   Identifier, StringLiteral, IntegerLiteral, And, Class, Else, False, True, Fun,
   Colon, If, Or, Print, Return, This, Var, Type, UnitType, StringType,
-  IntegerType, Eof =
+  IntegerType, Nil, Eof =
     Value
 
 }
