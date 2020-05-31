@@ -1,3 +1,8 @@
 package slang.interpreter.runtimeclasses
 
-trait MyCallable {}
+import slang.interpreter.{ExpressionVisitorImpl, Interpreter}
+
+trait MyCallable {
+  def call(visitor: Interpreter, args: List[Any]): Any
+
+}

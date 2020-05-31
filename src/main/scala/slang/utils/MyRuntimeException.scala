@@ -7,21 +7,24 @@ case class MyRuntimeException(exceptionType: MyRuntimeExceptionType)
     extends CustomException {
 
   val analysePhase: AnalysePhase = AnalysePhase.Runtime
+  import MyRuntimeExceptionType._
   val message: String = exceptionType match {
-    case MyRuntimeExceptionType.IdentifierNotInScope =>
+    case IdentifierNotInScope =>
       "Identifier not in scope"
-    case MyRuntimeExceptionType.InvalidNumberOfArguments =>
+    case InvalidNumberOfArguments =>
       "invalid number of arguments"
-    case MyRuntimeExceptionType.InvalidArgumentException =>
+    case InvalidArgumentException =>
       "Invalid argument provided"
-    case MyRuntimeExceptionType.MinusNotANumber =>
+    case MinusNotANumber =>
       "Invalid expression. MINUS <not a number>"
-    case MyRuntimeExceptionType.SumIncompatibleTypes =>
+    case SumIncompatibleTypes =>
       "You can not sum up these types"
-    case MyRuntimeExceptionType.UndefinedVariable =>
+    case UndefinedVariable =>
       "Variable u requested is not defined"
-    case MyRuntimeExceptionType.UndefinedAttribute =>
+    case UndefinedAttribute =>
       "invalid attribute"
+    case YouCanCallOnlyFunctionsAndClasses =>
+      "You can call only functions and classes"
     case e => f"implement error message for ${e}"
   }
   override def toString: String = message
@@ -30,8 +33,9 @@ case class MyRuntimeException(exceptionType: MyRuntimeExceptionType)
 case object MyRuntimeExceptionType extends Enumeration {
   type MyRuntimeExceptionType = Value
   val MinusNotANumber, OperandMustBeANumber, SumIncompatibleTypes,
-  IdentifierNotInScope, AlreadyDeclared, InvalidArgumentException,
-  UndefinedVariable, UndefinedAttribute, InvalidNumberOfArguments =
+  IdentifierNotInScope, YouCanCallOnlyFunctionsAndClasses, AlreadyDeclared,
+  InvalidArgumentException, UndefinedVariable, UndefinedAttribute,
+  InvalidNumberOfArguments =
     Value
 
 }

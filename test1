@@ -5,8 +5,13 @@ print(x)
 print(s)
 def foo(): Int = {
     print("foo executed")
+    var x: Int = 10
+    print("x in function")
+    print(x)
 }
 foo()
+print("x outside of fun")
+print(x)
 if (x == "") {
     print("hello")
 } else

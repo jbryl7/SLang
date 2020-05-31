@@ -1,5 +1,6 @@
 package slang.interpreter.runtimeclasses
 
+import slang.interpreter.Interpreter
 import slang.lexer.Token
 import slang.utils.{
   ExceptionHandler,
@@ -21,4 +22,6 @@ class MyClass(name: String, functions: Map[String, MyFunction])
         Some(
           f"Undefined method ${name.lexeme} in class ${name}. ${name.position}"))
   }
+
+  override def call(visitor: Interpreter, args: List[Any]): Any = ???
 }

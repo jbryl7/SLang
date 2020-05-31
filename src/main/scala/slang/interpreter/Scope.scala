@@ -11,39 +11,35 @@ import slang.utils.{
 
 import scala.collection.mutable
 
-case class Scope(functions: mutable.Map[String, MyFunction] = mutable.Map(),
-                 classes: mutable.Map[String, Any] = mutable.Map(),
-                 vars: mutable.Map[String, Any] = mutable.Map(),
+case class Scope(vars: mutable.Map[String, Any] = mutable.Map(),
                  var parentScope: Scope = null) {
 
-  def isVarInScope(identifier: String): Boolean =
+  def isInScope(identifier: String): Boolean =
     vars.keys.toList.contains(identifier)
-  def isFunInScope(identifier: String): Boolean =
-    functions.keys.toList.contains(identifier)
 
-  def setVariable(identifier: Token, value: Any): Unit = {
-    if (isVarInScope(identifier.lexeme))
+  def set(identifier: Token, value: Any): Unit = {
+    if (isInScope(identifier.lexeme))
       vars(identifier.lexeme) = value
     else if (parentScope != null)
-      parentScope.setVariable(identifier, value)
+      parentScope.set(identifier, value)
     else
       ExceptionHandler.reportException(
         MyRuntimeException(MyRuntimeExceptionType.UndefinedVariable),
         Some(identifier.toString))
   }
-  def defineVariable(identifier: Token, value: Any): Unit = {
-    if (!isVarInScope(identifier.lexeme))
+  def define(identifier: Token, value: Any): Unit = {
+    if (!isInScope(identifier.lexeme))
       vars(identifier.lexeme) = value
     else
       ExceptionHandler.reportException(
         MyRuntimeException(MyRuntimeExceptionType.AlreadyDeclared),
         Some(identifier.toString))
   }
-  def getVariable(identifier: Token): Any = {
+  def get(identifier: Token): Any = {
     if (vars.keys.toList.contains(identifier.lexeme))
       vars(identifier.lexeme)
     else if (parentScope != null)
-      parentScope.getVariable(identifier)
+      parentScope.get(identifier)
     else {
       ExceptionHandler.reportException(
         MyRuntimeException(MyRuntimeExceptionType.UndefinedVariable),
@@ -51,34 +47,8 @@ case class Scope(functions: mutable.Map[String, MyFunction] = mutable.Map(),
       null
     }
   }
-  def defineFunction(function: FunctionStatement): Unit = {
-    if (!isFunInScope(function.name.lexeme))
-      functions(function.name.lexeme) = MyFunction(function, null)
-    else {
-      ExceptionHandler.reportException(
-        MyRuntimeException(MyRuntimeExceptionType.AlreadyDeclared),
-        Some(function.name.toString))
-    }
-  }
-  def getFunction(identifier: Token): Any = {
-    if (isFunInScope(identifier.lexeme)) {
-      print("getting fun")
-      functions(identifier.lexeme)
-      print("success fun")
-    } else if (parentScope != null)
-      parentScope.getFunction(identifier)
-    else {
-      ExceptionHandler.reportException(
-        MyRuntimeException(MyRuntimeExceptionType.UndefinedVariable),
-        Some(identifier.toString))
-      null
-    }
-  }
-  def getFunctionsIdentifiers: List[String] =
-    functions.keys.toList ++ parentScope.getFunctionsIdentifiers
+
   def getVariableIdentifiers: List[String] =
     vars.keys.toList ++ parentScope.getVariableIdentifiers
-  def getClassesIdentifiers: List[String] =
-    classes.keys.toList ++ parentScope.getClassesIdentifiers
 
 }
