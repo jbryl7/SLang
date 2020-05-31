@@ -21,7 +21,8 @@ case class MyInstance(myClass: MyClass,
       ExceptionHandler.reportException(
         MyRuntimeException(MyRuntimeExceptionType.UndefinedAttribute),
         Some(
-          f"Undefined property ${name.toString} in object of class ${myClass}."))
+          f"Undefined property ${name.lexeme} in object of class ${myClass} ${name.position}.")
+      )
   }
 
   def get(name: Token): Any = {
@@ -35,7 +36,8 @@ case class MyInstance(myClass: MyClass,
       ExceptionHandler.reportException(
         MyRuntimeException(MyRuntimeExceptionType.UndefinedAttribute),
         Some(
-          s"Undefined property ${name.toString} in object of class ${myClass}."))
+          s"Undefined property ${name.lexeme} in object of class ${myClass} ${name.position}.")
+      )
     }
   }
 }

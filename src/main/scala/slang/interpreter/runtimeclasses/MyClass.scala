@@ -24,7 +24,7 @@ case class MyClass(name: String,
     if (args.length != params.toList.length)
       ExceptionHandler.reportException(
         MyRuntimeException(MyRuntimeExceptionType.InvalidNumberOfArguments),
-        Some(this.toString))
+        Some(s"In instance creation of class ${name}"))
     val instanceAttributes: mutable.Map[String, Any] = mutable.Map()
     args.zip(params).foreach(p => instanceAttributes(p._2.name.lexeme) = p._1)
     MyInstance(this, instanceAttributes)
