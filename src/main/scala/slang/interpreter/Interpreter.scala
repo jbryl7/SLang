@@ -20,18 +20,20 @@ case class Interpreter(parser: Parser)
     rootBlock.statements.foreach(execute)
   }
 
+  def executeBlock(block: Block, scope: Scope): Unit = {
+    val previous = currentScope
+    try {
+      currentScope = scope
+      block.statements.foreach(execute)
+    } finally currentScope = previous
+  }
+
   def interpret(expression: Expression): Unit =
     try {
       println(evaluate(expression))
     } catch {
       case e: Throwable => println(e)
     }
-
-  override def visitBlockStmt(stmt: Block): Unit = {
-    currentScope = Scope(parentScope = currentScope)
-    stmt.statements.foreach(_.accept(this))
-    currentScope = currentScope.parentScope
-  }
 
   override def visitClassStmt(stmt: ClassStatement): Unit = {
     if (!currentScope.isInScope(stmt.name.lexeme)) {
@@ -252,4 +254,7 @@ case class Interpreter(parser: Parser)
 
   override def visitVariableExpr(expr: VariableExpression): Any =
     currentScope.get(expr.name)
+
+  override def visitBlockStmt(stmt: Block): Unit =
+    executeBlock(stmt, Scope(parentScope = currentScope))
 }

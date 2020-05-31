@@ -4,31 +4,34 @@ print("start interpreting")
 class XD(x: Int, h: String) {
     def x(arg1: Int): Unit = print("klasa XD metoda x")
 }
-class Inna(x: XD) {
 
-}
+class Inna(x: XD) {}
+
 var obiekt: XD = XD(10, "jakis napis")
 var innyObiekt: Inna = Inna(obiekt)
 
-
-
 //x.x()
-
 
 var s: String = "\" hejka \"" // nizej invalid syntax
 var x: Int = 5
+
 print(x)
 print(s)
+
 def foo(y: Int): Int = {
     print(y)
-    if (x == "") {
-        print("hello")
+    if (x == "x") {
+        return foo(1)
     } else
-        print(x)
+        return "rekurencja zadzialala"
 }
-var z: Int = foo(10)
-print("z = " + z)
-print("foo return value: "+ foo(10))
 
-print(x)
+def counter(x: Int): Unit = {
+    if (x >= 0){
+        print(x)
+        counter(x-1)
+     }
+}
 
+counter(10)
+print(foo("x"))
