@@ -12,7 +12,7 @@ import scala.collection.mutable
 case class MyInstance(myClass: MyClass,
                       attributes: mutable.Map[String, Any] = mutable.Map()) {
   override def toString: String =
-    f"${myClass.toString}(${attributes.map(p => f"${p._1}->${p._2}").mkString(", ")})"
+    f"${myClass.toString}(${attributes.toList.reverse.map(_._2).mkString(", ")})"
 
   def set(name: Token, value: Any): Unit = {
     if (attributes.keys.toList.contains(name.lexeme))

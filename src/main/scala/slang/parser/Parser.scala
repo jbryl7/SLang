@@ -1,6 +1,7 @@
 package slang.parser
 import slang.instructions.expressions._
 import slang.instructions.statements._
+import slang.interpreter.runtimeclasses.MyNil
 import slang.lexer.TokenType.TokenType
 import slang.lexer._
 import slang.utils._
@@ -327,6 +328,9 @@ case class Parser(lexer: LexerInterface) {
       case TokenType.True =>
         accept(TokenType.True)
         LiteralExpression(true)
+      case TokenType.Nil =>
+        accept(TokenType.Nil)
+        LiteralExpression(MyNil)
 
       case TokenType.IntegerLiteral =>
         val ret = LiteralExpression(currentToken.lexeme.toInt)

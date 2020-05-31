@@ -1,8 +1,7 @@
-
 def fibonacci(n: Int): Int = {
-    if (n < 2)
+    if (n < 2) {
         return 1
-    else
+        } else
         return fibonacci(n-1) + fibonacci(n-2)
 }
 

@@ -110,6 +110,7 @@ case class Lexer(fileHandler: FileHandler) extends LexerInterface {
     ("def", Fun),
     ("=", Assign),
     ("var", Var),
+    ("nil", Nil),
     (">", Greater),
     ("<", Less),
     ("<=", LessEqual),
