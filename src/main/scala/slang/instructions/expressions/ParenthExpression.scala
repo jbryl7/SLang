@@ -1,6 +1,6 @@
 package slang.instructions.expressions
 
-case class GroupingExpression(val expression: Expression) extends Expression {
+case class ParenthExpression(val expression: Expression) extends Expression {
   override def accept[R](visitor: ExpressionVisitor[R]): R =
     visitor.visitGroupingExpression(this)
   override def toString(nested: Int): String = {

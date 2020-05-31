@@ -352,7 +352,7 @@ case class Parser(lexer: LexerInterface) {
         accept(TokenType.LeftParenthesis)
         val expr = parseExpression()
         accept(TokenType.RightParenthesis)
-        GroupingExpression(expr)
+        ParenthExpression(expr)
       case _ =>
         ExceptionHandler.reportException(
           ParserException(ParserExceptionType.InvalidExpression),

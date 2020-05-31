@@ -209,7 +209,7 @@ case class Interpreter(parser: Parser)
     }
   }
 
-  override def visitGroupingExpression(expr: GroupingExpression): Any =
+  override def visitGroupingExpression(expr: ParenthExpression): Any =
     evaluate(expr.expression)
 
   override def visitLiteralExpression(expr: LiteralExpression): Any =

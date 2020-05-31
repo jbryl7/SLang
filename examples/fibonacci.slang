@@ -4,7 +4,16 @@ def fibonacci(n: Int): Int = {
         } else
         return fibonacci(n-1) + fibonacci(n-2)
 }
-
 var x: Int = 7
-print("fib(7): " + fibonacci(x))
-print("fib(12): " + fibonacci(12))
+var y: Int = 5
+
+def addOne(): Unit =
+    x = x + 1
+def addOneButNotX(x: Int): Unit =
+    x = x+1
+print("x = "+ x)
+addOne()
+addOneButNotX(y)
+print("x = " + x)
+print("fib(7): " + fibonacci(7))
+print("fib(x): " + fibonacci(x))

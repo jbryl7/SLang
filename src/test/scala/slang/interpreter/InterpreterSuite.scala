@@ -21,6 +21,10 @@ class InterpreterSuite extends AnyFlatSpec with Matchers {
     an[MyRuntimeException] should be thrownBy intepretCode("var x: Int = 5 / 0")
   }
 
+  "accessing val from different scope" should "throw exception" in {
+    an[MyRuntimeException] should be thrownBy intepretCode(
+      "if (true) {var x: Int = 5 \n print(x)} \n print(x)\n")
+  }
   "accessing non-existing object param" should "throw exception" in {
     an[MyRuntimeException] should be thrownBy intepretCode(
       "class K1(x: Int) {\n    def foo(x: Int): Int =\n        return this.x + x\n}\nclass K2(k: K1) {}\nvar k1: K1 = K1(10)\nvar k2: Int = k1.y")

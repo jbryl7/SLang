@@ -16,6 +16,10 @@ class ParserSuite extends AnyFlatSpec with Matchers {
   def parseCode(code: String): Block = {
     Parser(Lexer(FileHandler(code = Some(code)))).parse()
   }
+  "declaration in block one liner" should "throw exception" in {
+    an[ParserException] should be thrownBy parseCode(
+      "if(true) var x: Int = 5 else print(5)")
+  }
   "CallNonCallable" should "throw exception" in {
     an[ParserException] should be thrownBy parseCode("5()")
   }

@@ -8,7 +8,7 @@ trait ExpressionVisitor[R] {
   def visitBinaryExpression(expr: BinaryExpression): R
   def visitCallExpression(expr: CallExpression): R
   def visitGetExpression(expr: GetExpression): R
-  def visitGroupingExpression(expr: GroupingExpression): R
+  def visitGroupingExpression(expr: ParenthExpression): R
   def visitLiteralExpression(expr: LiteralExpression): R
   def visitLogicalExpression(expr: LogicalExpression): R
   def visitThisExpression(expr: ThisExpression): R
