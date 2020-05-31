@@ -45,7 +45,11 @@ class ParserSuite extends AnyFlatSpec with Matchers {
       "var x: Int = (0 + 1) * (15 - 10) + 3")
   }
   "correct class declaration" should "not throw exception" in {
-    noException should be thrownBy parseCode("class Class { var x: Int = 5 }")
+    noException should be thrownBy parseCode(
+      "class XD(x: Int, h: String) {\n    def x(arg1: Int): Unit = print(\"klasa XD metoda x\")\n}")
+  }
+  "correct class declaration2" should "not throw exception" in {
+    noException should be thrownBy parseCode("class XD(x: Int, h: String) {}")
   }
   "correct fun declaration" should "not throw exception" in {
     noException should be thrownBy parseCode("def foo(x: Int): Int = {}")
