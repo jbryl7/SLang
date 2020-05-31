@@ -2,6 +2,7 @@ package slang.interpreter.runtimeclasses
 
 import slang.instructions.statements.FunctionStatement
 import slang.interpreter.{Interpreter, Scope}
+import slang.lexer.{CurrentPosition, Token, TokenType}
 import slang.utils.{
   ExceptionHandler,
   MyRuntimeException,
@@ -10,7 +11,10 @@ import slang.utils.{
 
 import scala.collection.mutable.ListBuffer
 
-case class MyFunction(declaration: FunctionStatement) extends MyCallable {
+case class MyFunction(declaration: FunctionStatement,
+                      binding: MyInstance = null)
+    extends MyCallable {
+
   override def call(visitor: Interpreter, args: ListBuffer[Any]): Any = {
     if (args.length != declaration.params.length)
       ExceptionHandler.reportException(
@@ -21,6 +25,10 @@ case class MyFunction(declaration: FunctionStatement) extends MyCallable {
     declaration.params
       .zip(args)
       .foreach(param => funScope.define(param._1.name, param._2))
+
+    if (binding != null)
+      funScope.define(Token(TokenType.This, "this", CurrentPosition(-1, -1)),
+                      binding)
 
     var ret: Any = ()
     funScope.parentScope = visitor.currentScope

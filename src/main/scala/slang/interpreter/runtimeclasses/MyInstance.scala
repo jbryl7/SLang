@@ -28,7 +28,8 @@ case class MyInstance(myClass: MyClass,
     if (attributes.keys.toList.contains(name.lexeme))
       attributes(name.lexeme)
     else if (myClass.get(name) != null) {
-      myClass.get(name)
+      val fun = myClass.get(name)
+      fun.copy(binding = this)
     } else {
       println(myClass.functions)
       ExceptionHandler.reportException(

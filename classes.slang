@@ -1,6 +1,6 @@
 class K1(x: Int) {
-    def foo(): K1 =
-        return K1(123)
+    def foo(): Int =
+        return this.x
 }
 class K2(k: K1) {}
 
@@ -14,5 +14,4 @@ k2.k.x = 42
 print(k2)
 k2.k = k11
 print(k2)
-k2.k.foo() = k1.foo()
-print(k2)
+print(k1.foo())

@@ -40,7 +40,7 @@ case class Interpreter(parser: Parser)
 
       val classMethods: mutable.Map[String, MyFunction] = mutable.Map()
       stmt.classBody.funs
-        .map(MyFunction)
+        .map(MyFunction(_))
         .foreach(f => classMethods(f.declaration.name.lexeme) = f)
       currentScope.define(stmt.name,
                           MyClass(stmt.name.lexeme,
@@ -225,6 +225,7 @@ case class Interpreter(parser: Parser)
   }
 
   override def visitThisExpression(expr: ThisExpression): Any = ???
+
   def isTrue(r: Any): Boolean =
     r match {
       case r: Boolean => r

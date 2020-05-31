@@ -14,7 +14,7 @@ case class MyClass(name: String,
   override def toString: String =
     f"${name}"
 
-  def get(name: Token): Any = {
+  def get(name: Token): MyFunction = {
     if (functions.keys.toList.contains(name.lexeme))
       functions(name.lexeme)
     else
