@@ -1,8 +1,10 @@
 package slang.interpreter.runtimeclasses
 
-import slang.interpreter.{ExpressionVisitorImpl, Interpreter}
+import slang.interpreter.Interpreter
+
+import scala.collection.mutable.ListBuffer
 
 trait MyCallable {
-  def call(visitor: Interpreter, args: List[Any]): Any
+  def call(visitor: Interpreter, args: ListBuffer[Any]): Any
 
 }

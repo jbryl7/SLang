@@ -1,25 +1,14 @@
 package slang.interpreter
 
 import slang.instructions.expressions._
-import slang.instructions.statements.{
-  Block,
-  ClassStatement,
-  ExpressionStatement,
-  FunctionStatement,
-  IfStatement,
-  PrintStatement,
-  ReturnStatement,
-  StatementVisitor,
-  VarStatement
-}
-import slang.interpreter.runtimeclasses.{MyCallable, MyFunction, MyInstance}
-import slang.lexer.{Token, TokenType}
+import slang.instructions.statements._
+import slang.interpreter.runtimeclasses._
+import slang.lexer._
 import slang.parser.Parser
-import slang.utils.{
-  ExceptionHandler,
-  MyRuntimeException,
-  MyRuntimeExceptionType
-}
+import slang.utils._
+
+import scala.collection.mutable
+import scala.collection.mutable.ListBuffer
 case class Interpreter(parser: Parser)
     extends StatementVisitor[Unit]
     with ExpressionVisitor[Any] {
@@ -44,16 +33,35 @@ case class Interpreter(parser: Parser)
     currentScope = currentScope.parentScope
   }
 
-  override def visitClassStmt(stmt: ClassStatement): Unit = ???
+  override def visitClassStmt(stmt: ClassStatement): Unit = {
+    if (!currentScope.isInScope(stmt.name.lexeme)) {
 
-  override def visitExpressionStmt(stmt: ExpressionStatement): Unit = {
-    println("visit expression stmt")
-    evaluate(stmt.expression)
+      val classMethods: mutable.Map[String, MyFunction] = mutable.Map()
+      stmt.classBody.funs
+        .map(MyFunction)
+        .foreach(f => classMethods(f.declaration.name.lexeme) = f)
+      currentScope.define(stmt.name,
+                          MyClass(stmt.name.lexeme,
+                                  stmt.params: ListBuffer[Parameter],
+                                  classMethods))
+    } else {
+      ExceptionHandler.reportException(
+        MyRuntimeException(MyRuntimeExceptionType.AlreadyDeclared),
+        Some(stmt.name.toString))
+    }
   }
+
+  override def visitExpressionStmt(stmt: ExpressionStatement): Unit =
+    evaluate(stmt.expression)
 
   override def visitFunctionStmt(stmt: FunctionStatement): Unit = {
     if (!currentScope.isInScope(stmt.name.lexeme))
       currentScope.define(stmt.name, MyFunction(stmt))
+    else {
+      ExceptionHandler.reportException(
+        MyRuntimeException(MyRuntimeExceptionType.AlreadyDeclared),
+        Some(stmt.name.toString))
+    }
   }
 
   override def visitIfStmt(stmt: IfStatement): Unit = {
@@ -82,7 +90,16 @@ case class Interpreter(parser: Parser)
     currentScope.define(stmt.name, value)
   }
 
-  override def visitSetExpr(set: SetExpression) = ???
+  override def visitSetExpr(set: SetExpression): Any = {
+    val obj = evaluate(set.`object`)
+    obj match {
+      case o: MyCallable => o
+      case _ =>
+        ExceptionHandler.reportException(
+          MyRuntimeException(MyRuntimeExceptionType.VariableWithoutMembers),
+          Some(set.name.toString))
+    }
+  }
 
   override def visitAssignExpr(expr: AssignExpression): Any = {
     currentScope.set(expr.name, expr.value)
@@ -158,7 +175,6 @@ case class Interpreter(parser: Parser)
           case _                => reportOperandMustBeANumber(expr.operator)
         }
       case _ =>
-        println("interpreting binary expression error")
         null
     }
 
@@ -166,12 +182,14 @@ case class Interpreter(parser: Parser)
 
   override def visitCallExpr(expr: CallExpression): Any = {
     val calle = evaluate(expr.callee)
-    val args = expr.arguments.map(evaluate).toList
-    if (!calle.isInstanceOf[MyCallable])
+    val args = expr.arguments.map(evaluate)
+    if (!calle.isInstanceOf[MyCallable]) {
+      println(calle)
       ExceptionHandler.reportException(
         MyRuntimeException(
           MyRuntimeExceptionType.YouCanCallOnlyFunctionsAndClasses),
         Some(expr.paren.position.toString))
+    }
     calle.asInstanceOf[MyCallable].call(this, args)
   }
 
@@ -179,6 +197,10 @@ case class Interpreter(parser: Parser)
     val obj = evaluate(expr.`object`)
     obj match {
       case myInstance: MyInstance => myInstance.get(expr.name)
+      case _ =>
+        ExceptionHandler.reportException(
+          MyRuntimeException(MyRuntimeExceptionType.VariableWithoutMembers),
+          Some(expr.name.toString))
     }
   }
 
@@ -196,7 +218,6 @@ case class Interpreter(parser: Parser)
       case TokenType.Or =>
         isTrue(l) || isTrue(evaluate(expr.right))
       case _ =>
-        println("interpreting logicalExpressionError")
         null
     }
   }

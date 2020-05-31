@@ -50,19 +50,21 @@ case class Parser(lexer: LexerInterface) {
     accept(TokenType.Class)
     val identifier = currentToken
     accept(TokenType.Identifier)
+    accept(TokenType.LeftParenthesis)
+    val params = parseParameters()
+    accept(TokenType.RightParenthesis)
+
     val classBody = parseClassBody()
 
-    ClassStatement(identifier, classBody)
+    ClassStatement(identifier, classBody, params)
   }
   def parseClassBody(): ClassBody = {
-    val varDeclarations: ListBuffer[VarStatement] = ListBuffer()
     val funDeclarations: ListBuffer[FunctionStatement] = ListBuffer()
 
     accept(TokenType.LeftBrace)
 
     while (currentToken.tokenType != TokenType.RightBrace) {
       currentToken.tokenType match {
-        case TokenType.Var => varDeclarations.append(parseVarDeclaration())
         case TokenType.Fun =>
           funDeclarations.append(parseFunctionDeclaration())
         case _ =>
@@ -74,7 +76,7 @@ case class Parser(lexer: LexerInterface) {
     }
     accept(TokenType.RightBrace)
 
-    ClassBody(varDeclarations, funDeclarations)
+    ClassBody(funDeclarations)
   }
   def parseFunctionDeclaration(): FunctionStatement = {
     accept(TokenType.Fun)

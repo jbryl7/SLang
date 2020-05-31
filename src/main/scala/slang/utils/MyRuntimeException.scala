@@ -25,6 +25,8 @@ case class MyRuntimeException(exceptionType: MyRuntimeExceptionType)
       "invalid attribute"
     case YouCanCallOnlyFunctionsAndClasses =>
       "You can call only functions and classes"
+    case VariableWithoutMembers =>
+      "Variable without members. You can call only on Instances of Slang."
     case e => f"implement error message for ${e}"
   }
   override def toString: String = message
@@ -35,7 +37,7 @@ case object MyRuntimeExceptionType extends Enumeration {
   val MinusNotANumber, OperandMustBeANumber, SumIncompatibleTypes,
   IdentifierNotInScope, YouCanCallOnlyFunctionsAndClasses, AlreadyDeclared,
   InvalidArgumentException, UndefinedVariable, UndefinedAttribute,
-  InvalidNumberOfArguments =
+  VariableWithoutMembers, InvalidNumberOfArguments =
     Value
 
 }

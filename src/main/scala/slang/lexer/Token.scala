@@ -13,7 +13,7 @@ case class Token(tokenType: TokenType,
       nest += "  "
     nest
   }
-  def toString(nested: Int) = {
+  def toString(nested: Int): String = {
     val nest = getNest(nested)
     f"\n${nest}Token\n${nest} type: ${tokenType}\n${nest} lexeme: ${lexeme}\n${nest} pos: ${position}"
   }

@@ -1,4 +1,20 @@
 
+print("start interpreting")
+
+class XD(x: Int, h: String) {
+    def x(arg1: Int): Unit = print("klasa XD metoda x")
+}
+class Inna(x: XD) {
+
+}
+var obiekt: XD = XD(10, "jakis napis")
+var innyObiekt: Inna = Inna(obiekt)
+
+
+
+//x.x()
+
+
 var s: String = "\" hejka \"" // nizej invalid syntax
 var x: Int = 5
 print(x)
@@ -15,5 +31,4 @@ print("z = " + z)
 print("foo return value: "+ foo(10))
 
 print(x)
-
 
