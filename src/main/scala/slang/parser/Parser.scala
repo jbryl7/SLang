@@ -1,6 +1,4 @@
 package slang.parser
-import slang.instructions._
-import slang.instructions.customtypes.MyString
 import slang.instructions.expressions._
 import slang.instructions.statements._
 import slang.lexer.TokenType.TokenType

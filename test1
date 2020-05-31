@@ -1,26 +1,17 @@
 
 var s: String = "\" hejka \"" // nizej invalid syntax
 var x: Int = 5
-
-x = s
-print("2xd" + 5 + (5 > (2 * 3)) + "heh")
-
 print(x)
-
-def foo(x: Int): Int = {
-    return x
+print(s)
+def foo(): Int = {
+    print("foo executed")
 }
-class C {
-    def foo(x: Int): Unit =
-        println(x)
-}
-var x: Int = 5
-def foo(n: Int): Int = {
-    print(n)
-}
+foo()
 if (x == "") {
     print("hello")
 } else
-    foo(x)
+    print(x)
 
-x = x.y.z
+print(x)
+
+

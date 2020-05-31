@@ -18,6 +18,11 @@ case class MyRuntimeException(exceptionType: MyRuntimeExceptionType)
       "Invalid expression. MINUS <not a number>"
     case MyRuntimeExceptionType.SumIncompatibleTypes =>
       "You can not sum up these types"
+    case MyRuntimeExceptionType.UndefinedVariable =>
+      "Variable u requested is not defined"
+    case MyRuntimeExceptionType.UndefinedAttribute =>
+      "invalid attribute"
+    case e => f"implement error message for ${e}"
   }
   override def toString: String = message
 }
@@ -26,7 +31,7 @@ case object MyRuntimeExceptionType extends Enumeration {
   type MyRuntimeExceptionType = Value
   val MinusNotANumber, OperandMustBeANumber, SumIncompatibleTypes,
   IdentifierNotInScope, AlreadyDeclared, InvalidArgumentException,
-  UndefinedVariable, InvalidNumberOfArguments =
+  UndefinedVariable, UndefinedAttribute, InvalidNumberOfArguments =
     Value
 
 }
