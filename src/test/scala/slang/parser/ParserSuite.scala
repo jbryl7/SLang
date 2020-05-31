@@ -16,7 +16,12 @@ class ParserSuite extends AnyFlatSpec with Matchers {
   def parseCode(code: String): Block = {
     Parser(Lexer(FileHandler(code = Some(code)))).parse()
   }
-
+  "CallNonCallable" should "throw exception" in {
+    an[ParserException] should be thrownBy parseCode("5()")
+  }
+  "CallNonCallable2" should "throw exception" in {
+    an[ParserException] should be thrownBy parseCode("\"text\"()")
+  }
   "unexpectedEndOfFile1" should "throw exception" in {
     an[ParserException] should be thrownBy parseCode("fun(arg")
   }
@@ -71,9 +76,6 @@ class ParserSuite extends AnyFlatSpec with Matchers {
   }
   "var x: Int = 24\\n x = 42" should "not throw exception" in {
     noException should be thrownBy parseCode("var x: Int = 24\n x = 42")
-  }
-  "x.y().z" should "not throw exception" in {
-    noException should be thrownBy parseCode("x.y().z")
   }
 
 }

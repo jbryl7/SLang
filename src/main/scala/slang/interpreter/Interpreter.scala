@@ -148,8 +148,11 @@ case class Interpreter(parser: Parser)
         }
       case TokenType.DivideOperator =>
         (left, right) match {
-          case (l: Int, r: Int) => l / r
-          case _                => reportOperandMustBeANumber(expr.operator)
+          case (l: Int, r: Int) if r == 0 =>
+            ExceptionHandler.reportException(
+              MyRuntimeException(MyRuntimeExceptionType.ZeroDivision),
+              Some(expr.operator.toString))
+          case _ => reportOperandMustBeANumber(expr.operator)
         }
       case TokenType.LessEqual =>
         (left, right) match {

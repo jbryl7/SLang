@@ -2,7 +2,6 @@ class K1(x: Int) {
     def foo(x: Int): Int =
         return this.x + x
 }
-
 class K2(k: K1) {}
 var k1: K1 = K1(10)
 var k2: K2 = K2(k1)
