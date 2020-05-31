@@ -185,7 +185,7 @@ case class Parser(lexer: LexerInterface) {
         case e: VariableExpression =>
           expr = AssignExpression(e.name, value)
         case e: GetExpression =>
-          expr = SetExpression(e.`object`, e.name, value)
+          expr = SetExpression(e.obj, e.name, value)
       }
     }
     expr

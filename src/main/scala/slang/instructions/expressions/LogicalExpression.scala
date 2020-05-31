@@ -7,7 +7,7 @@ case class LogicalExpression(val left: Expression,
                              val right: Expression)
     extends Expression {
   override def accept[R](visitor: ExpressionVisitor[R]): R =
-    visitor.visitLogicalExpr(this)
+    visitor.visitLogicalExpression(this)
 
   override def toString(nested: Int): String = {
     val nest = getNest(nested)

@@ -7,7 +7,7 @@ case class BinaryExpression(left: Expression,
                             right: Expression)
     extends Expression {
   override def accept[R](visitor: ExpressionVisitor[R]): R =
-    visitor.visitBinaryExpr(this)
+    visitor.visitBinaryExpression(this)
 
   override def toString(nested: Int): String = {
     val nest = getNest(nested)

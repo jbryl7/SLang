@@ -72,5 +72,8 @@ class ParserSuite extends AnyFlatSpec with Matchers {
   "var x: Int = 24\\n x = 42" should "not throw exception" in {
     noException should be thrownBy parseCode("var x: Int = 24\n x = 42")
   }
+  "x.y().z" should "not throw exception" in {
+    noException should be thrownBy parseCode("x.y().z")
+  }
 
 }

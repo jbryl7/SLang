@@ -16,7 +16,7 @@ case class MyClass(name: String,
 
   def get(name: Token): Any = {
     if (functions.keys.toList.contains(name.lexeme))
-      functions.get(name.lexeme)
+      functions(name.lexeme)
     else
       null
   }

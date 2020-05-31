@@ -4,7 +4,7 @@ import slang.lexer.Token
 
 case class AssignExpression(name: Token, value: Expression) extends Expression {
   override def accept[R](visitor: ExpressionVisitor[R]): R =
-    visitor.visitAssignExpr(this)
+    visitor.visitAssignExpression(this)
 
   override def toString(nested: Int): String = {
     val nest = getNest(nested)

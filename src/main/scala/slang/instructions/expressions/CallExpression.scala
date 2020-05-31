@@ -9,7 +9,7 @@ case class CallExpression(callee: Expression,
                           arguments: ListBuffer[Expression])
     extends Expression {
   override def accept[R](visitor: ExpressionVisitor[R]): R =
-    visitor.visitCallExpr(this)
+    visitor.visitCallExpression(this)
 
   override def toString(nested: Int): String = {
     val nest = getNest(nested)

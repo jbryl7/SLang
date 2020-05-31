@@ -92,10 +92,10 @@ case class Interpreter(parser: Parser)
     currentScope.define(stmt.name, value)
   }
 
-  override def visitSetExpr(set: SetExpression): Any = {
-    val obj = evaluate(set.`object`)
+  override def visitSetExpression(set: SetExpression): Any = {
+    val obj = evaluate(set.obj)
     obj match {
-      case o: MyCallable => o
+      case o: MyInstance => o.set(set.name, evaluate(set.value))
       case _ =>
         ExceptionHandler.reportException(
           MyRuntimeException(MyRuntimeExceptionType.VariableWithoutMembers),
@@ -103,11 +103,11 @@ case class Interpreter(parser: Parser)
     }
   }
 
-  override def visitAssignExpr(expr: AssignExpression): Any = {
+  override def visitAssignExpression(expr: AssignExpression): Any = {
     currentScope.set(expr.name, evaluate(expr.value))
   }
 
-  override def visitBinaryExpr(expr: BinaryExpression): Any = {
+  override def visitBinaryExpression(expr: BinaryExpression): Any = {
     def reportOperandMustBeANumber(operator: Token): Any =
       ExceptionHandler.reportException(
         MyRuntimeException(MyRuntimeExceptionType.OperandMustBeANumber),
@@ -182,7 +182,7 @@ case class Interpreter(parser: Parser)
 
   }
 
-  override def visitCallExpr(expr: CallExpression): Any = {
+  override def visitCallExpression(expr: CallExpression): Any = {
     val calle = evaluate(expr.callee)
     val args = expr.arguments.map(evaluate)
     if (!calle.isInstanceOf[MyCallable]) {
@@ -195,8 +195,8 @@ case class Interpreter(parser: Parser)
     calle.asInstanceOf[MyCallable].call(this, args)
   }
 
-  override def visitGetExpr(expr: GetExpression): Any = {
-    val obj = evaluate(expr.`object`)
+  override def visitGetExpression(expr: GetExpression): Any = {
+    val obj = evaluate(expr.obj)
     obj match {
       case myInstance: MyInstance => myInstance.get(expr.name)
       case _ =>
@@ -206,13 +206,13 @@ case class Interpreter(parser: Parser)
     }
   }
 
-  override def visitGroupingExpr(expr: GroupingExpression): Any =
+  override def visitGroupingExpression(expr: GroupingExpression): Any =
     evaluate(expr.expression)
 
-  override def visitLiteralExpr(expr: LiteralExpression): Any =
+  override def visitLiteralExpression(expr: LiteralExpression): Any =
     expr.value
 
-  override def visitLogicalExpr(expr: LogicalExpression): Any = {
+  override def visitLogicalExpression(expr: LogicalExpression): Any = {
     val l = evaluate(expr.left)
     expr.operator.tokenType match {
       case TokenType.And =>
@@ -224,7 +224,7 @@ case class Interpreter(parser: Parser)
     }
   }
 
-  override def visitThisExpr(expr: ThisExpression): Any = ???
+  override def visitThisExpression(expr: ThisExpression): Any = ???
   def isTrue(r: Any): Boolean =
     r match {
       case r: Boolean => r
@@ -233,7 +233,7 @@ case class Interpreter(parser: Parser)
       case null       => false
       case _          => true
     }
-  override def visitUnaryExpr(expr: UnaryExpression): Any = {
+  override def visitUnaryExpression(expr: UnaryExpression): Any = {
     val right = evaluate(expr.right)
     try {
       expr.operator.tokenType match {
@@ -252,7 +252,7 @@ case class Interpreter(parser: Parser)
     }
   }
 
-  override def visitVariableExpr(expr: VariableExpression): Any =
+  override def visitVariableExpression(expr: VariableExpression): Any =
     currentScope.get(expr.name)
 
   override def visitBlockStmt(stmt: Block): Unit =
