@@ -8,3 +8,5 @@ if (x == "") {
     print("hello")
 } else
     foo(x)
+
+x = 11

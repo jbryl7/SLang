@@ -2,36 +2,25 @@
 print("start interpreting")
 
 class XD(x: Int, h: String) {
-    def x(arg1: Int): Unit = print("klasa XD metoda x")
+    def foo(arg1: Int): Unit = print("foo method of XD class")
 }
 
 class Inna(x: XD) {}
 
-var obiekt: XD = XD(10, "jakis napis")
+var obiekt: XD = XD(10, "some text")
 var innyObiekt: Inna = Inna(obiekt)
+print("XD obiekt -> " + obiekt)
+print("Inna obiekt -> " + innyObiekt)
+var s: String = "\" yo buddy \"" // comment
+var x: Int = 7
 
-//x.x()
+def fibonacci(n: Int): Int = {
+    if (n < 2)
+        return 1
+    else
+        return fibonacci(n-1) + fibonacci(n-2)
+}
 
-var s: String = "\" hejka \"" // nizej invalid syntax
-var x: Int = 5
-
+print("fib: " + fibonacci(x))
+x = 10
 print(x)
-print(s)
-
-def foo(y: Int): Int = {
-    print(y)
-    if (x == "x") {
-        return foo(1)
-    } else
-        return "rekurencja zadzialala"
-}
-
-def counter(x: Int): Unit = {
-    if (x >= 0){
-        print(x)
-        counter(x-1)
-     }
-}
-
-counter(10)
-print(foo("x"))

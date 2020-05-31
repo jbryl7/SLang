@@ -104,7 +104,7 @@ case class Interpreter(parser: Parser)
   }
 
   override def visitAssignExpr(expr: AssignExpression): Any = {
-    currentScope.set(expr.name, expr.value)
+    currentScope.set(expr.name, evaluate(expr.value))
   }
 
   override def visitBinaryExpr(expr: BinaryExpression): Any = {

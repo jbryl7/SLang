@@ -1,13 +1,7 @@
 package slang.interpreter
 
-import slang.instructions.statements._
-import slang.interpreter.runtimeclasses.MyFunction
 import slang.lexer.Token
-import slang.utils.{
-  ExceptionHandler,
-  MyRuntimeException,
-  MyRuntimeExceptionType
-}
+import slang.utils._
 
 import scala.collection.mutable
 
