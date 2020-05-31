@@ -19,5 +19,4 @@ case class MyInstance(myClass: MyClass, attributes: Map[String, Any]) {
         MyRuntimeException(MyRuntimeExceptionType.UndefinedAttribute),
         Some("Undefined property '" + name.lexeme + "'."))
   }
-
 }

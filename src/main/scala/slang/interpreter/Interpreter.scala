@@ -28,7 +28,6 @@ case class Interpreter(parser: Parser)
 
   def interpret(): Unit = {
     val rootBlock = parser.parse()
-    print(rootBlock)
     rootBlock.statements.foreach(execute)
   }
 
@@ -53,7 +52,8 @@ case class Interpreter(parser: Parser)
   }
 
   override def visitFunctionStmt(stmt: FunctionStatement): Unit = {
-    currentScope.define(stmt.name, MyFunction(stmt))
+    if (!currentScope.isInScope(stmt.name.lexeme))
+      currentScope.define(stmt.name, MyFunction(stmt))
   }
 
   override def visitIfStmt(stmt: IfStatement): Unit = {
@@ -113,11 +113,13 @@ case class Interpreter(parser: Parser)
               case _: Throwable =>
                 ExceptionHandler.reportException(
                   MyRuntimeException(
-                    MyRuntimeExceptionType.SumIncompatibleTypes))
+                    MyRuntimeExceptionType.SumIncompatibleTypes),
+                  Some(expr.right.toString))
             }
           case _ =>
             ExceptionHandler.reportException(
-              MyRuntimeException(MyRuntimeExceptionType.SumIncompatibleTypes))
+              MyRuntimeException(MyRuntimeExceptionType.SumIncompatibleTypes),
+              Some(expr.right.toString))
         }
 
       case TokenType.MultiplicativeOperator =>
@@ -170,7 +172,6 @@ case class Interpreter(parser: Parser)
         MyRuntimeException(
           MyRuntimeExceptionType.YouCanCallOnlyFunctionsAndClasses),
         Some(expr.paren.position.toString))
-
     calle.asInstanceOf[MyCallable].call(this, args)
   }
 

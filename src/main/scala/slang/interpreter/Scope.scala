@@ -28,12 +28,7 @@ case class Scope(vars: mutable.Map[String, Any] = mutable.Map(),
         Some(identifier.toString))
   }
   def define(identifier: Token, value: Any): Unit = {
-    if (!isInScope(identifier.lexeme))
-      vars(identifier.lexeme) = value
-    else
-      ExceptionHandler.reportException(
-        MyRuntimeException(MyRuntimeExceptionType.AlreadyDeclared),
-        Some(identifier.toString))
+    vars(identifier.lexeme) = value
   }
   def get(identifier: Token): Any = {
     if (vars.keys.toList.contains(identifier.lexeme))

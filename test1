@@ -3,19 +3,16 @@ var s: String = "\" hejka \"" // nizej invalid syntax
 var x: Int = 5
 print(x)
 print(s)
-def foo(): Int = {
-    print("foo executed")
-    var x: Int = 10
-    print("x in function")
-    print(x)
+def foo(y: Int): Int = {
+    print(y)
+    if (x == "") {
+        print("hello")
+    } else
+        print(x)
 }
-foo()
-print("x outside of fun")
-print(x)
-if (x == "") {
-    print("hello")
-} else
-    print(x)
+var z: Int = foo(10)
+print("z = " + z)
+print("foo return value: "+ foo(10))
 
 print(x)
 
