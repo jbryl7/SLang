@@ -28,13 +28,6 @@ case class Interpreter(parser: Parser)
     } finally currentScope = previous
   }
 
-  def interpret(expression: Expression): Unit =
-    try {
-      println(evaluate(expression))
-    } catch {
-      case e: Throwable => println(e)
-    }
-
   override def visitClassStmt(stmt: ClassStatement): Unit = {
     if (!currentScope.isInScope(stmt.name.lexeme)) {
 
@@ -114,9 +107,9 @@ case class Interpreter(parser: Parser)
         Some(operator.toString))
     def checkEquality(left: Any, right: Any): Boolean =
       (left, right) match {
-        case (null, null)          => true
-        case (null, _) | (_, null) => false
-        case (l, r)                => l.equals(r)
+        case (MyNil, MyNil)          => true
+        case (MyNil, _) | (_, MyNil) => false
+        case (l, r)                  => l.equals(r)
       }
 
     val left = evaluate(expr.left)
@@ -152,7 +145,8 @@ case class Interpreter(parser: Parser)
             ExceptionHandler.reportException(
               MyRuntimeException(MyRuntimeExceptionType.ZeroDivision),
               Some(expr.operator.toString))
-          case _ => reportOperandMustBeANumber(expr.operator)
+          case (l: Int, r: Int) => l / r
+          case _                => reportOperandMustBeANumber(expr.operator)
         }
       case TokenType.LessEqual =>
         (left, right) match {
@@ -189,7 +183,6 @@ case class Interpreter(parser: Parser)
     val calle = evaluate(expr.callee)
     val args = expr.arguments.map(evaluate)
     if (!calle.isInstanceOf[MyCallable]) {
-      println(calle)
       ExceptionHandler.reportException(
         MyRuntimeException(
           MyRuntimeExceptionType.YouCanCallOnlyFunctionsAndClasses),
@@ -227,10 +220,12 @@ case class Interpreter(parser: Parser)
     }
   }
 
-  override def visitThisExpression(expr: ThisExpression): Any = ???
+  override def visitThisExpression(expr: ThisExpression): Any =
+    currentScope.get(expr.keyword)
 
   def isTrue(r: Any): Boolean =
     r match {
+      case MyNil      => false
       case r: Boolean => r
       case ""         => false
       case 0          => false

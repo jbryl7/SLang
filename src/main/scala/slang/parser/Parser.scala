@@ -168,7 +168,7 @@ case class Parser(lexer: LexerInterface) {
   def parsePrint(): Statement = {
     accept(TokenType.Print)
     accept(TokenType.LeftParenthesis)
-    val expressionToPrint = parseExpression()
+    val expressionToPrint = parseOr
     accept(TokenType.RightParenthesis)
     PrintStatement(expressionToPrint)
   }
@@ -179,9 +179,8 @@ case class Parser(lexer: LexerInterface) {
   private def parseAssignment: Expression = {
     var expr: Expression = parseOr
     if (currentToken.tokenType == TokenType.Assign) {
-      print("entered")
       accept(TokenType.Assign)
-      val value = parseAssignment
+      val value = parseOr
       expr match {
         case e: VariableExpression =>
           expr = AssignExpression(e.name, value)
@@ -265,8 +264,6 @@ case class Parser(lexer: LexerInterface) {
     expr
   }
 
-  //< addition-and-multiplication
-  //> unary
   private def parseUnary: Expression =
     if (currentToken.tokenType == TokenType.Minus || currentToken.tokenType == TokenType.Bang) {
       val operator = currentToken
