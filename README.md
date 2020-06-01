@@ -15,3 +15,4 @@ With sbt preinstalled:
 > test
 - 2.2 run program with input file
 > run path_to_input_file
+
